@@ -1,10 +1,9 @@
 COVID DataHub APP
 Deployed: 4/22/2020
 
-1. 4/23/2020: Asked for a mirrored app that does not use ggplotly to make it more user friendly on a phone.
-2. 4/23/2020: <completed> Key interventions: review and edit before deployment
-3. 4/25/2020: <completed> No new cases today, the plots did not update (shift a day) due to using the max(date). 
-4. 4/26/2020: <completed> Typo on sidebar (tract needs replaced with track)
-5. 4/28/2020: <completed> Update dates, the API changed and needed to address milliseconds date format
-6. 4/28/2020: <completed> Deployed new version of the app 
-7. 4/29/2020: <completed> Updated the URL of the public file on the data hub to try and resolve some issues with updates. Deployed new version of the app.
+4/23/2020: <completed> Key interventions: review and edit before deployment
+4/25/2020: <completed> No new cases today, the plots did not update (shift a day) due to using the max(date). 
+4/26/2020: <completed> Typo on sidebar (tract needs replaced with track)
+4/28/2020: <completed> Update dates, the API changed and needed to address milliseconds date format
+4/28/2020: <completed> Deployed new version of the app 
+4/29/2020: <completed> Updated the URL of the public file on the data hub to try and resolve some issues with updates. Deployed new version of the app.
