@@ -7,3 +7,6 @@ Deployed: 4/22/2020
 4/28/2020: <completed> Update dates, the API changed and needed to address milliseconds date format
 4/28/2020: <completed> Deployed new version of the app 
 4/29/2020: <completed> Updated the URL of the public file on the data hub to try and resolve some issues with updates. Deployed new version of the app.
+4/29/2020: <completed> Updated the URL of the public file on the data hub to try and resolve some issues with updates. Deployed new version of the app.
+4/29/2020: <completed> The geojson is the universal and uses epoch dates and should be actually be used, updated to this, but will need to watch close for bugs. Deployed new version of the app.
+4/29/2020: <completed> Need to update URL for summary table as the hub site need to update how it is hosting these files
