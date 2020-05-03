@@ -13,3 +13,4 @@ Deployed: 4/22/2020
 5/01/2020: <completed> ESRI is having issues with dates, had to update again due to a change in date format in the public file
 5/02/2020: <completed> ESRI updated teh date format for the summary table used to establish max date, fixed code (will idenitfy a better fix)
 5/02/2020: <completed> Published app with reproductive number included and organized the methods tabs in tabset
+5/03/2020: <completed> QI issues identified with onset dates after report date. Also increased size of the shiny app from 1G to 2G
