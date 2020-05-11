@@ -14,4 +14,9 @@ Deployed: 4/22/2020
 5/02/2020: <completed> ESRI updated teh date format for the summary table used to establish max date, fixed code (will idenitfy a better fix)
 5/02/2020: <completed> Published app with reproductive number included and organized the methods tabs in tabset
 5/03/2020: <completed> QI issues identified with onset dates after report date. Also increased size of the shiny app from 1G to 2G
-5/03/2020: <completed> fixed a few typos
+5/03/2020: <completed> fixed a few typos.
+5/07/2020: <completed> Updated Rt graph to say date opposed to tnk.
+5/11/2020: <completed> Major data structure update on the hub site had to redesign code and deploy shiny application.
+5/11/2020: <completed> Add new Mandate to mandates figure.
+5/11/2020: <completed> Update Rt graph with new numbers for mean serial interval.
+5/11/2020: <completed> Added link on Rt graph to external site for comp.
