@@ -4,9 +4,9 @@ options(scipen=999) # remove scientific notation
 #load libraries
 library(httr)
 library(jsonlite)
-library(rjson)
+#library(rjson)
 library(RCurl)
-library(dplyr)
+#library(dplyr)
 library(ggplot2)
 library(lubridate)
 library(incidence)
@@ -16,7 +16,7 @@ library(EpiEstim)
 
 ## Create password log-in scrip ##
 library(shiny)
-library(shinymanager)
+#library(shinymanager)
 
 ####app####
 ui<- function(req) {
@@ -37,8 +37,8 @@ ui<- function(req) {
                           br(),
                           "NOTE:",
                           br(),    
-                          "Please review the methods tab regularly to learn about any changes or updates to the model",
-                          "and/or measurements."), width=3),
+                          "The model was updated on 2020-07-02, please review the methods tab to learn about recent",
+                          "updates."), width=3),
                mainPanel(
                  tabsetPanel(
                    tabPanel("Plots", 
@@ -205,7 +205,7 @@ ui<- function(req) {
                               c("Parametric" = "para",
                                 "MCMC estimation" = "mcmc")),
                  
-                 helpText("NOTE:",
+                 helpText("Note:",
                           br(),
                           "Selecting the MCMC method for paramatizing the mean serial interval",
                           "will take a few seconds to run due to the simulations being", 
@@ -215,24 +215,48 @@ ui<- function(req) {
                           "of disease in an index case, and the onset of disease in a contact.",
                           br(),
                           br(),
-                          "IMPORTANT:",
+                          "Comparing Rt values:",
                           br(),
-                          "The method used for estimating the effective reproductive number",
-                          "or Rt is based on those suggested by the imperial College, for", 
-                          "more information please see the Methods tab.",
+                          "Because of the different methodologies used to calculate Rt",
+                          "the values calculated here are not directly comparable with",
+                          "other estimates.",
                           br(),
+                          "To see how Alaska compares, please visit:",
+                          a("https://rt.live"),
+                          "While slightly different from our method, these researchers",
+                          "provide state-level estimates facilitating a comparison.",
+                          "Their approach accounts for the delay from infection to onset",
+                          "of symptoms and changes in the amount of testing done, as well as applies",
+                          "a smoother to reduce daily variation.",
+                          br(),
+                          br(),
+                          "Reference:",
                           br(),
                           "Cori, A. et al. A new framework and software to estimate",
-                          "time-varying reproduction numbers during epidemics (AJE 2013)"
-                          
+                          "time-varying reproduction numbers during epidemics (AJE 2013)",
+                          br(),
+                          br(),
+                          "Update:",
+                          "We are working on a more substantial update to provide regional",
+                          "breakdowns of Rt and hope to have this available in the coming weeks."
                  ), width=3),
                mainPanel(
                  tabsetPanel(
                    tabPanel("7 day sliding window", 
+                            h4("Statewide Estimates of R-effective (time-varying)"),
+                            p("The effective reproductive number (R-effective or time-varying Rt)",
+                              ", is the avereage number of people, that a single infected person",
+                              "will pass the virus onto and represents the rate at which the virus is spreading.",
+                              "Calculating Rt requires observing and estimating multiple parameters.",
+                              "Because of this, different methods are available or being developed.",
+                              "The method we used for estimating Rt is based on those suggested by",
+                              "the imperial College which uses a 7-day sliding widow Bayesian approach.",
+                              "For technical details on our approach, please review the Methods tab."),
+                            br(),
+                            p("In general, if Rt > 1, the number of infected persons will increase, and if",
+                            "Rt < 1, the number of infected persons will decrease."),
                             br(),
                             plotlyOutput("Plot_r"),
-                            br(),
-                            uiOutput("link1"),
                             br(),
                             h4("Estimated R values (7 day window)"),
                             DT::dataTableOutput("table_r")
@@ -253,9 +277,9 @@ server <- shinyServer(function(input, output) {
   #load libraries
   library(httr)
   library(jsonlite)
-  library(rjson)
+  #library(rjson)
   library(RCurl)
-  library(dplyr)
+  #library(dplyr)
   library(ggplot2)
   library(lubridate)
   library(incidence)
@@ -297,7 +321,10 @@ server <- shinyServer(function(input, output) {
   ## had to modify and hard code this due to change in data structure, and assume it is constant.
   set.seed(2020)
   #dist <- round(rgamma(1000, shape =  sts$Y[3])) 
-  dist <- round(rgamma(1000, shape =  7)) 
+  #use a truncated gamma distribution to ensure that the selected durations are consistant
+  # with observed data and in a 2-week range and modify shape from 7 to 6.
+  library(heavy)
+  dist <- round(rtgamma(1000, shape =  6, truncation = 14)) 
   
   #zro <- table(dat1$duration<=0)[2] # isolate duration = 0 cases and impute values
   zro <- table(dat1$duration)
@@ -365,19 +392,17 @@ server <- shinyServer(function(input, output) {
   
   #### End data inport and set-up ### 
   
-  
-  
   output$Plot <- renderPlotly({
     io_1 <- incidence(dat1$OnsetDate, last_date = max_date)
     io_1cum <- cumulate(io_1) # cumulative incidence
     
     #subset and create incidence object on the 10 days before truncation.
     
-    io_2cum <- subset(io_1cum, from = max(io_1$dates-20), to = max(io_1$dates-7))
-    
+    io_2cum <- subset(io_1cum, from = max(io_1$dates-16), to = max(io_1$dates-7))
+
     # for plotting 7 days truncated.
     tnk <- as.data.frame(subset(io_1cum, from = max(io_1cum$dates-6), to = max(io_1cum$dates)))
-    
+
     #Fit log linear model on the 10 day subset
     i_fit <- incidence::fit(io_2cum)
     get_info(i_fit, "pred")
@@ -385,7 +410,8 @@ server <- shinyServer(function(input, output) {
     
     dtr <- data.frame(date = as.Date(min(io_1cum$dates):(max(io_1cum$dates)+10), origin = "1970-01-01"))
     
-    dts <- c((i_fit$model$model$dates.x), ((max(i_fit$model$model$dates.x)+1): 31)) # create range for prediction
+    #dts <- c((i_fit$model$model$dates.x), ((max(i_fit$model$model$dates.x)+1): 31)) # create range for prediction
+    dts <- c(min(i_fit$model$model$dates.x):27)
     tIn <- data.frame(dates.x = as.numeric(dts)) #turn into data frame
     
     #prediction from fitted model
@@ -406,11 +432,12 @@ server <- shinyServer(function(input, output) {
     io_1cum_df <- as.data.frame(subset(io_1cum, 
                                        from = min(io_1$dates), 
                                        to = max(io_1$dates-7)))
+
     t1 <- ggplot() +
       geom_line(data=io_1cum_df, aes(x = dates, y = counts),size = 1, color = "#ffb923") +
-      geom_point(data=io_1cum_df, aes(x = dates, y = counts),size = 3, color = "#ffb923") +
-      
-      geom_point(data = tnk, aes(x = dates, y = counts), color = "#999999", size = 2) +
+      geom_point(data=io_1cum_df, aes(x = dates, y = counts),size = 1, color = "#ffb923") +
+
+      geom_point(data = tnk, aes(x = dates, y = counts), color = "#999999", size = 1) +
       
       geom_ribbon(data = projs, aes(x = date, ymin = lwr, ymax = upr), 
                   alpha = 0.15, fill = "#0a306a")+
@@ -419,7 +446,7 @@ server <- shinyServer(function(input, output) {
                    limits = c(min(dtr$date), max(dtr$date))) +
       coord_cartesian(ylim = c(0, max(io_1cum_df$counts)+300)) +
       geom_line(aes(date, fit), 
-                projs,linetype="dashed", size = 1, color = "#0a306a") +
+                projs,linetype="dashed", size = 0.5, color = "#0a306a") +
       theme_minimal() +
       labs(title = "Cumulative daily incidence by onset date, Alaska",
            subtitle = "(log-linear model: short term forecast with 95% confidence band)",
@@ -438,7 +465,7 @@ server <- shinyServer(function(input, output) {
                                         '(log-linear model: short term forecast with 95% confidence band)',
                                         '<br>',
                                         '<sup>',
-                                        '*Note: Analyses truncated by 7 days (gray bars) due to delay in reporting, resulting in incomplete data',
+                                        '*Note: Analyses truncated by 7 days (gray dots) due to delay in reporting, resulting in incomplete data',
                                         '</sup>')))
     
   })
@@ -485,7 +512,7 @@ server <- shinyServer(function(input, output) {
                position="stack") +
       scale_fill_manual(values = c("#0a306a","#ffb923", "#999999"))+
       xlim(min(io_1$dates),max(io_1$dates)) +
-      scale_y_continuous(limits = c(0,35)) +
+      scale_y_continuous(limits = c(0,max(io_1$counts)+10)) +
       scale_x_date(breaks = pretty(io_1$dates, n = 10),date_labels = "%d %b") +
       theme_minimal() +
       labs(title="Epidemic curve by onset date, Alaska",
@@ -501,10 +528,10 @@ server <- shinyServer(function(input, output) {
   
   output$Plot3 <- renderPlotly({
     io_1 <- incidence(dat1$OnsetDate, last_date = max_date)
+    io_1a <- incidence(dat1$OnsetDate1, last_date = max_date)
     
-    #subset and create incidence object on the 10 days before truncation.
-    
-    io_2 <- subset(io_1, from = max(io_1$dates-20), to = max(io_1$dates-7))
+    #subset and create incidence object on the 21 days before truncation.
+    io_2 <- subset(io_1a, from = max(io_1a$dates-27), to = max(io_1a$dates-7))
     
     # for plotting end of non measured
     tnk <- as.data.frame(subset(io_1, from = max(io_1$dates-6), to = max(io_1$dates)))
@@ -512,12 +539,13 @@ server <- shinyServer(function(input, output) {
     #Fit log linear model on the 14 day subset
     i_fit <- incidence::fit(io_2)
     get_info(i_fit, "pred")
-    #set forecasting range for data
     
+    #set forecasting range for data
     dtr <- data.frame(date = as.Date(min(io_1$dates):(max(io_1$dates)+10), origin = "1970-01-01"))
+    #dtra <- data.frame(date = as.Date(min(io_1a$dates):(max(io_1a$dates)+10), origin = "1970-01-01"))
     
     #dts <- c((i_fit$model$model$dates.x), ((max(i_fit$model$model$dates.x)+1): 31)) # create range for prediction
-    dts <- c(min(i_fit$model$model$dates.x): 31)
+    dts <- c(min(i_fit$model$model$dates.x): 38)
     tIn <- data.frame(dates.x = as.numeric(dts)) #turn into data frame
     
     #prediction from fitted model
@@ -525,7 +553,9 @@ server <- shinyServer(function(input, output) {
     
     y <- exp(extFit) # put on natural scale
     
-    drg <- c(((max(dtr$date))-max(tIn$dates.x)):(max(dtr$date))) # set dates for predicted range
+    #drg <- c(((max(dtr$date))-max(tIn$dates.x)):(max(dtr$date))) # set dates for predicted range
+    drg <- c((min(io_2$dates)):(max(dtr$date))) # set dates for predicted range
+    
     
     #get_info(i_fit, "pred")
     
@@ -536,17 +566,20 @@ server <- shinyServer(function(input, output) {
     ### plotly version ###
     
     io_1dta <- as.data.frame(io_1)
+    io_2dta <- as.data.frame(io_1a)
     
     library(plotly)
     
     p1<-ggplot() +
       geom_bar(data = io_1dta, aes(x = dates, y = counts), stat = "identity",
                fill = "#ffb923", color = "white", width = 1) +
-      geom_bar(data = tnk, aes(x = dates, y = counts), stat = "identity", 
-               fill = "#999999", color = "white", width = 1) +
+       geom_bar(data = tnk, aes(x = dates, y = counts), stat = "identity", 
+                fill = "#999999", color = "white", width = 1) +
+      
       geom_line(aes(date, fit), projs,linetype="dashed", size = 1, color = "#0a306a") +
       geom_ribbon(data = projs, aes(x = date, ymin = lwr, ymax = upr), 
                   alpha = 0.15,fill = "#0a306a") +
+      
       xlim(min(dtr$date),max(dtr$date)) +
       coord_cartesian(ylim = c(0, max(io_1$counts)+10)) +
       scale_x_date(breaks = pretty(dtr$date, n = 10),date_labels = "%d %b") +
@@ -580,7 +613,7 @@ server <- shinyServer(function(input, output) {
     
     #subset and create incidence object on the 10 days before truncation.
     
-    io_2cum <- subset(io_1cum, from = max(io_1$dates-20), to = max(io_1$dates-7))
+    io_2cum <- subset(io_1cum, from = max(io_1$dates-16), to = max(io_1$dates-7))
     
     # for plotting 7 days truncated.
     tnk <- as.data.frame(subset(io_1cum, from = max(io_1cum$dates-6), to = max(io_1cum$dates)))
@@ -597,14 +630,14 @@ server <- shinyServer(function(input, output) {
   })
   
   output$table3 <- renderTable({
-    io_1 <- incidence(dat1$OnsetDate, last_date = max_date)
+    
+    io_1a <- incidence(dat1$OnsetDate1, last_date = max_date)
     
     #subset and create incidence object on the 10 days before truncation.
-    
-    io_2 <- subset(io_1, from = max(io_1$dates-20), to = max(io_1$dates-7))
+    io_2 <- subset(io_1a, from = max(io_1a$dates-27), to = max(io_1a$dates-7))
     
     # for plotting end of non measured
-    tnk <- as.data.frame(subset(io_1, from = max(io_1$dates-6), to = max(io_1$dates)))
+    tnk <- as.data.frame(subset(io_1a, from = max(io_1a$dates-6), to = max(io_1a$dates)))
     
     #Fit log linear model on the 10 day subset
     i_fit <- incidence::fit(io_2)
@@ -639,11 +672,6 @@ server <- shinyServer(function(input, output) {
   url2 <- a("click here", href="https://www.covid19.alaska.gov/health-mandates")
   output$link <- renderUI({
     tagList("For more information about Health Mandates:", url2)
-  })
-  
-  url3 <- a("click here", href="https://rt.live/")
-  output$link1 <- renderUI({
-    tagList("To see how Alaska's Rt compares with other States, visit https://rt.live or", url3)
   })
   
   output$Plot_r <- renderPlotly({

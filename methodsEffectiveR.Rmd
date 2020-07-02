@@ -48,7 +48,7 @@ We used the incidence[[4]](#references) and EpiEstim[[5]](#references) packages 
 
 The primary method used to calculate the effective reproductive number by the State of Alaska, Division of Public Health, implements a Bayesian framework as suggested and implemented in the EpiEstim package in the R statistical environment. This package is implemented and supported by Cori et al, at the imperial college. Multiple other packages such as “R0” exist and provide methods for estimating the reproductive number using several documented methods (e.g. using the attack rate, maximum likelihood, growth, and a Bayesian approach). These additional packages have been used, particularly the R0 package which provides some additional tools for conducting sensitivity analyses around the estimated inputs.  
 
-Briefly, using the estimate_R function in the EpiEstim package, a vector containing the incidence time series of cases based on onset date, estimates of the mean serial interval, and dates are supplied. Due to the delay between an individual recognizing symptoms, being tested, and those results being reported to the State, when an onset date is not yet know, the current practice is to substitute the reported date. To account for the fact that most of these substitution dates occur during the most recent week, a simple imputation method was developed to assign a temporary onset date by sampling from a gamma distribution with a median of 6 days. This imputation helps guard against making estimations that are attenuated due to limitations in data collection opposed to impacts related to the disease transmission. Additionally, due to future cases that are yet to be reported likely having onset dates during the most recent week of collection, correction methods or truncation is also required.  
+Briefly, using the estimate_R function in the EpiEstim package, a vector containing the incidence time series of cases based on onset date, estimates of the mean serial interval, and dates are supplied. Due to the delay between an individual recognizing symptoms, being tested, and those results being reported to the State, when an onset date is not yet know, the current practice is to substitute the reported date. To account for the fact that most of these substitution dates occur during the most recent week, a simple imputation method was developed to assign a temporary onset date by sampling from a truncated gamma distribution with a median of 6 days. This imputation helps guard against making estimations that are attenuated due to limitations in data collection opposed to impacts related to the disease transmission. Additionally, due to future cases that are yet to be reported likely having onset dates during the most recent week of collection, correction methods or truncation is also required.  
   
 Currently we right censor 5 days from the last reported date as this is the average incubation period.   
 
@@ -63,41 +63,24 @@ Both the parametric and empirical methods for estimating the serial interval dis
 
 The code for imputing an onset date when unknown:  
 ```{r eval = FALSE}
-  ## connect to Alaksa data hub through the API
-  url <- "https://opendata.arcgis.com/datasets/c0e6fd4aaa734e0e892d08189b76df4e_0.geojson"
-  
-  da <- jsonlite::fromJSON(url)
-  base::class(da)
-  da %>% str()
-  
-  # set data imported data as an object update to attributes 
-  dat1 <- tibble::as_tibble(da$features$properties) 
-  
-  # Fix dates 
-  # dat1$OnsetDate <- as.Date(as.POSIXct(dat1$OnsetDate/1000, origin = "1970-01-01", tz = "America/Anchorage"))
-  dat1$OnsetDate <- as.Date(substr(dat1$OnsetDate,1,10))
-  
-  ### Onset date imputation  
-  # calcuate duration in days.
   dat1$ReportDate <- as.Date(with(dat1, ifelse(OnsetDateReplaced == 2, dat1$OnsetDate,
-                                       NA)), origin = "1970-01-01")
+                                               NA)), origin = "1970-01-01")
   
   dat1$duration <- dat1$ReportDate - dat1$OnsetDate
   
-  ## set distribution for median duration
+  ## set distribution for median
   set.seed(2020)
-  dist <- round(rgamma(1000, shape =  7)) 
-  
+  library(heavy)
+  dist <- round(rtgamma(1000, shape =  6, truncation = 14)) 
   zro <- table(dat1$duration)
   
   set.seed(19) 
   smp1 <- sample(dist, zro)
   
   dat1$duration_imp <- ifelse(dat1$duration == 0, smp1, dat1$duration)
-  
-  # create onset date that subtracts out the imputed duration
+
   dat1$OnsetDate1 <- as.Date(ifelse(is.na(dat1$duration), dat1$OnsetDate,
-                                   dat1$OnsetDate - dat1$duration_imp),
+                                    dat1$OnsetDate - dat1$duration_imp),
                              origin = "1970-01-01")
 ```
    

@@ -22,16 +22,41 @@ log(y) = r*t+b
 
 Where, ‘y’ is the daily incidence, ‘t’ is the time in days from the start of the outbreak, ‘r’ is the growth rate, and ‘b’ is the origin or intercept. 
 
-Assuming that without mitigation efforts the disease will spread at an exponential rate, we modeled the observed daily case counts over a 14-day period based on date of onset, and projected out 17 days. Due to delays in identification, reporting, confirmation, and natural history of the disease, illness occurring in recent days may not be fully documented yet. To account for this delay, we truncated the 14-day analysis window back one week (seven days). This truncation is necessary due to incomplete information on onset date that is prevalent during this early window, and guards against creating models that produce biased trajectories.
+Update: We expanded the window from 14 - 21 days to inform the model. This was expanded to reduce the influence of a single data point on the overall model and smooth out projections. Due to the rise in cases, and delay in reporting and identifying/collecting the onset date, we based the model on our imputed estimate of the onset date when unknown. These methods are described below.  
 
-We truncated by seven days, due to the median duration from onset date to report date being approximately 6 days and attenuating in recent weeks. However, even with truncation, the results could be biased in the slope of the trajectory. The distribution of unknown onset date over the past 20 days however has remained fairly constant at nearly 2 cases per day. 
+Assuming that without mitigation efforts the disease will spread at an exponential rate, we modeled the observed daily case counts over a 21-day period based on date of onset, and projected out 17 days. Due to the delay between an individual recognizing symptoms, being tested, and those results being reported to the State, when an onset date is not yet know, the current practice is to substitute the reported date. To account for the fact that most of these substitution dates occur during the most recent week, a simple imputation method was developed to assign a temporary onset date by sampling from a truncated gamma distribution with a median of 6 days. This imputation helps guard against making estimations that are attenuated due to limitations in data collection opposed to impacts related to the disease transmission. Additionally, due to future cases that are yet to be reported likely having onset dates during the most recent week of collection, correction methods or truncation of 7 days is also required. These methods guard against creating models that produce biased trajectories.
 
-We used the most recent 14-day period minus the 7-day truncation period to project out 17 days (14 day’s beyond the last report date). The use of this 14 day window for the statewide estimate was chosen by convention with short-term projections, where the assumption is that more recent trends likely better approximate the current trajectory. 
+We truncated by seven days, due to the median duration from onset date to report date being approximately 6 days and attenuating in recent weeks. However, even with truncation and our imputation method, the results could be biased in the slope of the trajectory if the number of cases not yet reported substantially lags behind our estimation window. 
+
+We used the most recent 21-day period minus the 7-day truncation period to project out 17 days (14 day’s beyond the last report date). The use of this 21 day window for the statewide estimate was chosen by convention with short-term projections, where the assumption is that more recent trends likely better approximate the current trajectory.   
+
+The code for imputing an onset date when unknown:  
+```{r eval = FALSE}
+  dat1$ReportDate <- as.Date(with(dat1, ifelse(OnsetDateReplaced == 2, dat1$OnsetDate,
+                                               NA)), origin = "1970-01-01")
+  
+  dat1$duration <- dat1$ReportDate - dat1$OnsetDate
+  
+  ## set distribution for median
+  set.seed(2020)
+  library(heavy)
+  dist <- round(rtgamma(1000, shape =  6, truncation = 14)) 
+  zro <- table(dat1$duration)
+  
+  set.seed(19) 
+  smp1 <- sample(dist, zro)
+  
+  dat1$duration_imp <- ifelse(dat1$duration == 0, smp1, dat1$duration)
+
+  dat1$OnsetDate1 <- as.Date(ifelse(is.na(dat1$duration), dat1$OnsetDate,
+                                    dat1$OnsetDate - dat1$duration_imp),
+                             origin = "1970-01-01")
+```
 
 
 **Interpretation**    
 
-The first plot is based on daily incremental incidence counts often called the epidemic curve. The second plot is the daily additive counts of new cases, or cumulative incidence. Both plots use the date of onset, and if onset is unknown we use the report date. We’ve used gray bars (epidemic curve plot) and gray dots (cumulative incidence plot) to denote the truncated date from the model fit.
+The first plot is based on daily incremental incidence counts often called the epidemic curve. The second plot is the daily additive counts of new cases, or cumulative incidence. Both plots use the date of onset. Currently however, only the daily incidence plot uses the imputed onset date if unknown and 21 day window. We’ve used gray bars (epidemic curve plot) and gray dots (cumulative incidence plot) to denote the truncated date from the model fit.
 
 Generally, when the daily epidemic curve plot trajectory is decreasing, this means the number of new daily onset cases is getting smaller, suggesting the mitigation strategies are having an impact or the disease is dying out. Likewise, when the cumulative incidence trajectory flattens and appears more linear, this indicates a reduction in the number of new cases added to the total each day. 
 
@@ -55,4 +80,4 @@ Incidence of Dated Events. R package version 1.7.1.
 **Note:**  
 The code that created this application is available at:   
 <https://github.com/AK-MCH-EPI/AK_COVID>  
-last updated: 2020-04-22  
+last updated: 2020-07-02  
