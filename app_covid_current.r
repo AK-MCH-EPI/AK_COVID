@@ -242,7 +242,7 @@ ui<- function(req) {
                  ), width=3),
                mainPanel(
                  tabsetPanel(
-                   tabPanel("7 day sliding window", 
+                   tabPanel("14 day sliding window", 
                             h4("Statewide Estimates of R-effective (time-varying)"),
                             p("The effective reproductive number (R-effective or time-varying Rt)",
                               ", is the avereage number of people, that a single infected person",
@@ -250,7 +250,7 @@ ui<- function(req) {
                               "Calculating Rt requires observing and estimating multiple parameters.",
                               "Because of this, different methods are available or being developed.",
                               "The method we used for estimating Rt is based on those suggested by",
-                              "the imperial College which uses a 7-day sliding widow Bayesian approach.",
+                              "the imperial College. We use a 14-day sliding widow to smooth these data.",
                               "For technical details on our approach, please review the Methods tab."),
                             br(),
                             p("In general, if Rt > 1, the number of infected persons will increase, and if",
@@ -258,7 +258,7 @@ ui<- function(req) {
                             br(),
                             plotlyOutput("Plot_r"),
                             br(),
-                            h4("Estimated R values (7 day window)"),
+                            h4("Estimated R values (14 day sliding window)"),
                             DT::dataTableOutput("table_r")
                    ),
                    tabPanel("Methods",
@@ -279,7 +279,7 @@ server <- shinyServer(function(input, output) {
   library(jsonlite)
   #library(rjson)
   library(RCurl)
-  #library(dplyr)
+  library(dplyr)
   library(ggplot2)
   library(lubridate)
   library(incidence)
@@ -678,15 +678,19 @@ server <- shinyServer(function(input, output) {
     #set up data  
     ip <- incidence(dat1$OnsetDate)
     ipI <- incidence(dat1$OnsetDate1)
-    TC <- subset(ipI, from = min(ipI$dates), to = max(ip$dates-5))
+    TC <- subset(ipI, from = min(ipI$dates), to = max(ip$dates-6))
     
     io <- incidence(dat1$OnsetDate, groups = dat1$type, na_as_group = T)
     ioI <- incidence(dat1$OnsetDate1,groups = dat1$type, na_as_group = T)
-    LC <- subset(ioI, from = min(ioI$dates), to = max(io$dates-5))
+    LC <- subset(ioI, from = min(ioI$dates), to = max(io$dates-6))
     
     l1 <- list(`Total Cases` = TC, `Local Cases` = LC)
     
     d1 <- l1[[input$inSelect]]
+    
+    
+    t_start <- seq(2, nrow(d1)-13)
+    t_end   <- t_start + 13
     
     
     if (input$MSI == "para") {
@@ -695,7 +699,9 @@ server <- shinyServer(function(input, output) {
                         method="parametric_si",
                         config = make_config(list(
                           mean_si = 5.011976, 
-                          std_si = 4.10405)))
+                          std_si = 4.10405,
+                          t_start = t_start,
+                          t_end = t_end)))
     } else {
       SL = c(1,3,1,3,1,6,3,5,4,7,3,4,10,8,4,3,1,2,5,3,
              2,3,3,3,5,4,3,15,1,6,4,2,4,1,2,9,6,9,1,11,
@@ -721,7 +727,9 @@ server <- shinyServer(function(input, output) {
                                               mcmc_control = mcmc_control, 
                                               seed = overall_seed, 
                                               n1 = 100, 
-                                              n2 = 100))
+                                              n2 = 100,
+                                              t_start = t_start,
+                                              t_end = t_end))
       
       si7 <- estimate_R(d1, 
                         method = "si_from_data", 
@@ -731,10 +739,10 @@ server <- shinyServer(function(input, output) {
     }
     
     
-    mean <- si7$R$`Mean(R)`
-    low <- si7$R$`Quantile.0.025(R)`
-    high <- si7$R$`Quantile.0.975(R)`
-    date <- (si7$dates[-c(1:7)])
+    mean <- round(si7$R$`Mean(R)`,2)
+    low <- round(si7$R$`Quantile.0.025(R)`,2)
+    high <- round(si7$R$`Quantile.0.975(R)`,2)
+    date <- (si7$dates[-c(1:14)])
     
     dfx <- data.frame(mean = mean, low = low, high = high, date = as.Date(date, origin = "1970-01-01"))
     
@@ -761,16 +769,18 @@ server <- shinyServer(function(input, output) {
     #set up data  
     ip <- incidence(dat1$OnsetDate)
     ipI <- incidence(dat1$OnsetDate1)
-    TC <- subset(ipI, from = min(ipI$dates), to = max(ip$dates-5))
+    TC <- subset(ipI, from = min(ipI$dates), to = max(ip$dates-6))
     
     io <- incidence(dat1$OnsetDate, groups = dat1$type, na_as_group = T)
     ioI <- incidence(dat1$OnsetDate1,groups = dat1$type, na_as_group = T)
-    LC <- subset(ioI, from = min(ioI$dates), to = max(io$dates-5))
+    LC <- subset(ioI, from = min(ioI$dates), to = max(io$dates-6))
     
     l1 <- list(`Total Cases` = TC, `Local Cases` = LC)
     
     d1 <- l1[[input$inSelect]]
     
+    t_start <- seq(2, nrow(d1)-13)
+    t_end   <- t_start + 13
     
     if (input$MSI == "para") {
       
@@ -778,7 +788,9 @@ server <- shinyServer(function(input, output) {
                         method="parametric_si",
                         config = make_config(list(
                           mean_si = 5.011976, 
-                          std_si = 4.10405)))
+                          std_si = 4.10405,
+                          t_start = t_start,
+                          t_end = t_end)))
     } else {
       SL = c(1,3,1,3,1,6,3,5,4,7,3,4,10,8,4,3,1,2,5,3,
              2,3,3,3,5,4,3,15,1,6,4,2,4,1,2,9,6,9,1,11,
@@ -804,7 +816,9 @@ server <- shinyServer(function(input, output) {
                                               mcmc_control = mcmc_control, 
                                               seed = overall_seed, 
                                               n1 = 100, 
-                                              n2 = 100))
+                                              n2 = 100,
+                                              t_start = t_start,
+                                              t_end = t_end))
       
       si7 <- estimate_R(d1, 
                         method = "si_from_data", 
@@ -815,10 +829,11 @@ server <- shinyServer(function(input, output) {
     
     
     td1 <- si7$R[,c(3,5,11)]
-    td1$dates <-   d1$dates[-c(1:7)]
+    td1$dates <-   d1$dates[-c(1:14)]
     
     td2 <- as.data.frame(td1[,c(4,1:3)])
     #td2
+    td2 <- td2 %>% mutate_if(is.numeric, round, 3)
     td3 <- td2[order(-as.numeric(rownames(td2))),]
     td3
     

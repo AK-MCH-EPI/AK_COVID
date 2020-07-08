@@ -50,7 +50,7 @@ The primary method used to calculate the effective reproductive number by the St
 
 Briefly, using the estimate_R function in the EpiEstim package, a vector containing the incidence time series of cases based on onset date, estimates of the mean serial interval, and dates are supplied. Due to the delay between an individual recognizing symptoms, being tested, and those results being reported to the State, when an onset date is not yet know, the current practice is to substitute the reported date. To account for the fact that most of these substitution dates occur during the most recent week, a simple imputation method was developed to assign a temporary onset date by sampling from a truncated gamma distribution with a median of 6 days. This imputation helps guard against making estimations that are attenuated due to limitations in data collection opposed to impacts related to the disease transmission. Additionally, due to future cases that are yet to be reported likely having onset dates during the most recent week of collection, correction methods or truncation is also required.  
   
-Currently we right censor 5 days from the last reported date as this is the average incubation period.   
+Currently we right censor 6 days from the last reported date as this is the average incubation period.   
 
 A Bayesian framework is used to estimate the effective reproductive number of some predefined time window with a given discrete distribution of the serial interval. To establish the serial interval distribution, five user specified methods are available. Using a small sample of line listing data that were available, we estimated the mean serial interval and standard deviation. Using this information we compared three methods for addressing the mean serial interval:   
 
@@ -58,7 +58,7 @@ A Bayesian framework is used to estimate the effective reproductive number of so
 2. Uncertain, where we supplied the mean and standard deviation of the serial interval as well as bounds for these measures, where draws from a truncated normal distribution are used      
 3. Empirical method, where we provided the data which derived the mean serial interval and standard deviation, using MCMC for the exposure data provided       
 
-Both the parametric and empirical methods for estimating the serial interval distriubtion were used for making the estimations. Finally, these estimates are made using a 7-day sliding window to reduce the impact of day-to-day variability.     
+Both the parametric and empirical methods for estimating the serial interval distriubtion were used for making the estimations. Finally, these estimates are made using a 14-day sliding window to reduce the impact of day-to-day variability.     
 
 
 The code for imputing an onset date when unknown:  
@@ -87,21 +87,32 @@ The code for imputing an onset date when unknown:
    
 The code for estimating the time varying reproductive number:  
 ```{r eval = FALSE}
-#set different incidence objects for exploration
-library(EpiEstim)
-library(incidence)
-
-ipI <- incidence(dat1$OnsetDate1)
-ipI_t <- subset(ipI, from = min(ipI$dates), to = max(ip$dates-5))
-
-
- if (input$MSI == "para") {
+ #set up data  
+    ip <- incidence(dat1$OnsetDate)
+    ipI <- incidence(dat1$OnsetDate1)
+    TC <- subset(ipI, from = min(ipI$dates), to = max(ip$dates-6))
+    
+    io <- incidence(dat1$OnsetDate, groups = dat1$type, na_as_group = T)
+    ioI <- incidence(dat1$OnsetDate1,groups = dat1$type, na_as_group = T)
+    LC <- subset(ioI, from = min(ioI$dates), to = max(io$dates-6))
+    
+    l1 <- list(`Total Cases` = TC, `Local Cases` = LC)
+    
+    d1 <- l1[[input$inSelect]]
+    
+    t_start <- seq(2, nrow(d1)-13)
+    t_end   <- t_start + 13
+    
+    
+    if (input$MSI == "para") {
       
       si7 <- estimate_R(d1,
                         method="parametric_si",
                         config = make_config(list(
                           mean_si = 5.011976, 
-                          std_si = 4.10405)))
+                          std_si = 4.10405,
+                          t_start = t_start,
+                          t_end = t_end)))
     } else {
       SL = c(1,3,1,3,1,6,3,5,4,7,3,4,10,8,4,3,1,2,5,3,
              2,3,3,3,5,4,3,15,1,6,4,2,4,1,2,9,6,9,1,11,
@@ -127,14 +138,17 @@ ipI_t <- subset(ipI, from = min(ipI$dates), to = max(ip$dates-5))
                                               mcmc_control = mcmc_control, 
                                               seed = overall_seed, 
                                               n1 = 100, 
-                                              n2 = 100))
-    
-    si7 <- estimate_R(d1, 
-                      method = "si_from_data", 
-                      si_data = si_data_AK, 
-                      config = empirical_si_config)
-    
-  }
+                                              n2 = 100,
+                                              t_start = t_start,
+                                              t_end = t_end))
+      
+      si7 <- estimate_R(d1, 
+                        method = "si_from_data", 
+                        si_data = si_data_AK, 
+                        config = empirical_si_config)
+      
+    }
+
 ```
 
 **Interpretation:**
