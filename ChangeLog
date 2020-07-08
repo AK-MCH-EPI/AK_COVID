@@ -28,3 +28,4 @@ Deployed: 4/22/2020
 6/24/2020: <plan> Include an add a selector for in/out of state residents for model, epi-curve, and Rt values
 6/27/2020: <plan> Request to add selecor for region - Rt plot
 6/26/2020: <plan> Forked and working through California modeling code and adapting to Alaska to Validate
+7/07/2020: <completed> Updated Reff (Rt) calculation to a 14-day sliding window
