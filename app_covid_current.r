@@ -324,7 +324,7 @@ server <- shinyServer(function(input, output) {
   #use a truncated gamma distribution to ensure that the selected durations are consistant
   # with observed data and in a 2-week range and modify shape from 7 to 6.
   library(heavy)
-  dist <- round(rtgamma(1000, shape =  6, truncation = 14)) 
+  dist <- round(rtgamma(10000, shape =  6, truncation = 14)) 
   
   #zro <- table(dat1$duration<=0)[2] # isolate duration = 0 cases and impute values
   zro <- table(dat1$duration)
@@ -375,8 +375,8 @@ server <- shinyServer(function(input, output) {
   ### code to set end date to deal with if no cases are reported.
   #### this uses the max date from the testing data.
   
-  #url_x <- "https://opendata.arcgis.com/datasets/f2b5073959c247368e4cd28e54cd0cff_0.geojson"
-  url_x <- "https://opendata.arcgis.com/datasets/f7fbee9c32304652869dd842248ca4fa_0.geojson"
+  url_x <- "https://opendata.arcgis.com/datasets/f2b5073959c247368e4cd28e54cd0cff_0.geojson"
+  #url_x <- "https://opendata.arcgis.com/datasets/f7fbee9c32304652869dd842248ca4fa_0.geojson"
   
   da_x <- jsonlite::fromJSON(url_x)
   base::class(da_x)
@@ -385,10 +385,10 @@ server <- shinyServer(function(input, output) {
   # set data imported data as an object : date switched back
   dat1_x <- tibble::as_tibble(da_x$features$properties) 
   #dat1_x$Date <- as.Date(as.POSIXct(dat1_x$Date_/1000, origin = "1970-01-01", tz = "America/Anchorage"))
-  #dat1_x$Date<- as.Date(substr(dat1_x$Date_,1,10))
-  #max_date <- max(dat1_x$Date)
-  dat1_x$Date<- as.Date(substr(dat1_x$Date,1,10))
+  dat1_x$Date<- as.Date(substr(dat1_x$Date_,1,10))
   max_date <- max(dat1_x$Date)
+  #dat1_x$Date<- as.Date(substr(dat1_x$Date,1,10))
+  #max_date <- max(dat1_x$Date)
   
   #### End data inport and set-up ### 
   
@@ -444,7 +444,7 @@ server <- shinyServer(function(input, output) {
       
       scale_x_date(breaks = pretty(dtr$date, n = 10), date_labels = "%d %b",
                    limits = c(min(dtr$date), max(dtr$date))) +
-      coord_cartesian(ylim = c(0, max(io_1cum_df$counts)+300)) +
+      coord_cartesian(ylim = c(0, max(io_1cum_df$counts)+1000)) +
       geom_line(aes(date, fit), 
                 projs,linetype="dashed", size = 0.5, color = "#0a306a") +
       theme_minimal() +
@@ -581,7 +581,7 @@ server <- shinyServer(function(input, output) {
                   alpha = 0.15,fill = "#0a306a") +
       
       xlim(min(dtr$date),max(dtr$date)) +
-      coord_cartesian(ylim = c(0, max(io_1$counts)+10)) +
+      coord_cartesian(ylim = c(0, max(io_1$counts)+100)) +
       scale_x_date(breaks = pretty(dtr$date, n = 10),date_labels = "%d %b") +
       theme_minimal() +
       #theme(plot.caption = element_text(hjust = 0)) +
