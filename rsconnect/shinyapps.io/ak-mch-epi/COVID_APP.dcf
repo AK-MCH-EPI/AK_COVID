@@ -1,0 +1,12 @@
+name: COVID_APP
+title: COVID_APP
+username:
+account: ak-mch-epi
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2125824
+bundleId: 3488449
+url: https://ak-mch-epi.shinyapps.io/COVID_APP/
+when: 1596829832.36597
+asMultiple: FALSE
+asStatic: FALSE
