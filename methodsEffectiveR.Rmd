@@ -1,5 +1,6 @@
 ---
 title: "Methods"
+author: "JW Parrish"
 output: html_document
 ---
 
@@ -8,7 +9,7 @@ output: html_document
 
 **Background:**
 
-The reproductive number of a virus provides an indication of the avereage number of cases of disease, that a single infected person will cause among susceptible people during their infectious period. Often referred to as R0 (pronounced R naught), the reproductive number is often used in two distinct ways: the basic reproductive number(R0), and effective reproductive number(Rt).
+The reproductive number of a virus provides an indication of the average number of cases of disease, that a single infected person will cause among susceptible people during their infectious period. Often referred to as R0 (pronounced R naught), the reproductive number is often used in two distinct ways: the basic reproductive number(R0), and effective reproductive number(Rt).
 The basic reproductive number is the expected maximum of the disease in a given population that is fully susceptible with no mitigation efforts in place. This scenario, provides the maximum potential of the spread in a given community. The potential of the disease spread is what is traditionally known as R0.  
 
   
@@ -28,7 +29,7 @@ While an important measure of disease spread, this measure lags behind the actua
 The Imperial College has estimated the R0 of the novel Coronavirus (COVID-19) to be between 1.5 and 3.5. This projection while important is only a starting point for developing early projection models. Any estimate, however is influenced by detection, testing, and our understanding of the pathogen. Furthermore, the methodologies for calculating the effective reproductive number are not universally agreed upon by experts. While multiple methods do exist for calculating the effective reproductive number, many methods have been developed to account for limitations and availability of line listing data (information obtained from contact tracing), all of which however, should produce similar results.  
 
   
-All methods require some measure of input related to the exponential growth or spread of the disease. These measures are often estimated using the growth rate (how fast the disease is spreading over time in the population), mean serial interval (the average length of time between an index case expresses symptoms and an infected person expresses symptoms), or generation time (the time interval between one infection to a subsequent infection).  While additional nuances related to these measures are present, the generalities for this discussion are sufficient. Also required are incidence data about the outbreak (daily counts of infected people). Early in a disease outbreak the report date of a confirmed test may be used (and sometimes cumulative estimates, to address instability of early estimates), but  researchers quickly shift to daily incidence counts based on date of onset of symptoms. This, when plotted, is often referred to as the epidemic curve.  
+All methods require some measure of input related to the exponential growth or spread of the disease. These measures are often estimated using the growth rate (how fast the disease is spreading over time in the population), mean serial interval (the average length of time between when an index case expresses symptoms and an infected person expresses symptoms), or generation time (the time interval between one infection to a subsequent infection).  While additional nuances related to these measures are present, the generalities for this discussion are sufficient. Also required are incidence data about the outbreak (daily counts of infected people). Early in a disease outbreak the report date of a confirmed test may be used (and sometimes cumulative estimates, to address instability of early estimates), but  researchers quickly shift to daily incidence counts based on date of onset of symptoms. This, when plotted, is often referred to as the epidemic curve.  
   
     
 The three basic inputs for estimating the time-dependent effective reproductive number are:  
@@ -46,11 +47,13 @@ Methods for calculating the effective reproductive number using the describe inp
 
 We used the incidence[[4]](#references) and EpiEstim[[5]](#references) packages in R[[6]](#references) to estimate the time-varying reproductive number:
 
-The primary method used to calculate the effective reproductive number by the State of Alaska, Division of Public Health, implements a Bayesian framework as suggested and implemented in the EpiEstim package in the R statistical environment. This package is implemented and supported by Cori et al, at the imperial college. Multiple other packages such as “R0” exist and provide methods for estimating the reproductive number using several documented methods (e.g. using the attack rate, maximum likelihood, growth, and a Bayesian approach). These additional packages have been used, particularly the R0 package which provides some additional tools for conducting sensitivity analyses around the estimated inputs.  
+The primary method used to calculate the effective reproductive number by the State of Alaska, Division of Public Health, implements a Bayesian framework as suggested and implemented in the EpiEstim package in the R statistical environment. This package is implemented and supported by Cori et al., at the Imperial College. Multiple other packages such as “R0” exist and provide methods for estimating the reproductive number using several documented methods (e.g. using the attack rate, maximum likelihood, growth, and a Bayesian approach). These additional packages have been used, particularly the R0 package which provides some additional tools for conducting sensitivity analyses around the estimated inputs.  
 
 Briefly, using the estimate_R function in the EpiEstim package, a vector containing the incidence time series of cases based on onset date, estimates of the mean serial interval, and dates are supplied. Due to the delay between an individual recognizing symptoms, being tested, and those results being reported to the State, when an onset date is not yet know, the current practice is to substitute the reported date. To account for the fact that most of these substitution dates occur during the most recent week, a simple imputation method was developed to assign a temporary onset date by sampling from a truncated gamma distribution with a median of 6 days. This imputation helps guard against making estimations that are attenuated due to limitations in data collection opposed to impacts related to the disease transmission. Additionally, due to future cases that are yet to be reported likely having onset dates during the most recent week of collection, correction methods or truncation is also required.  
   
-Currently we right censor 6 days from the last reported date as this is the average incubation period.   
+Currently we right censor 6 days from the last reported date as this is the average incubation period, and then substitute the 
+fitted values from a log-linear model based on 21 day period prior to the censor date. These "provisional" estimates enable us
+to estimate Rt when cases have yet to be reported.
 
 A Bayesian framework is used to estimate the effective reproductive number of some predefined time window with a given discrete distribution of the serial interval. To establish the serial interval distribution, five user specified methods are available. Using a small sample of line listing data that were available, we estimated the mean serial interval and standard deviation. Using this information we compared three methods for addressing the mean serial interval:   
 
@@ -58,7 +61,8 @@ A Bayesian framework is used to estimate the effective reproductive number of so
 2. Uncertain, where we supplied the mean and standard deviation of the serial interval as well as bounds for these measures, where draws from a truncated normal distribution are used      
 3. Empirical method, where we provided the data which derived the mean serial interval and standard deviation, using MCMC for the exposure data provided       
 
-Both the parametric and empirical methods for estimating the serial interval distriubtion were used for making the estimations. Finally, these estimates are made using a 14-day sliding window to reduce the impact of day-to-day variability.     
+We initially provided both the parametric and empirical methods for estimating the serial interval distribution. Due to the limited
+differences in estimates the empirical method was dropped due to the extensive computing time required. Finally, these estimates are made using a 14-day sliding window to reduce the impact of day-to-day variability.     
 
 
 The code for imputing an onset date when unknown:  
@@ -71,7 +75,7 @@ The code for imputing an onset date when unknown:
   ## set distribution for median
   set.seed(2020)
   library(heavy)
-  dist <- round(rtgamma(1000, shape =  6, truncation = 14)) 
+  dist <- round(rtgamma(50000, shape =  6, truncation = 14)) 
   zro <- table(dat1$duration)
   
   set.seed(19) 
@@ -87,75 +91,80 @@ The code for imputing an onset date when unknown:
    
 The code for estimating the time varying reproductive number:  
 ```{r eval = FALSE}
- #set up data  
-    ip <- incidence(dat1$OnsetDate)
-    ipI <- incidence(dat1$OnsetDate1)
-    TC <- subset(ipI, from = min(ipI$dates), to = max(ip$dates-6))
-    
-    io <- incidence(dat1$OnsetDate, groups = dat1$type, na_as_group = T)
-    ioI <- incidence(dat1$OnsetDate1,groups = dat1$type, na_as_group = T)
-    LC <- subset(ioI, from = min(ioI$dates), to = max(io$dates-6))
-    
-    l1 <- list(`Total Cases` = TC, `Local Cases` = LC)
-    
-    d1 <- l1[[input$inSelect]]
-    
-    t_start <- seq(2, nrow(d1)-13)
-    t_end   <- t_start + 13
-    
-    
-    if (input$MSI == "para") {
-      
-      si7 <- estimate_R(d1,
-                        method="parametric_si",
-                        config = make_config(list(
-                          mean_si = 5.011976, 
-                          std_si = 4.10405,
-                          t_start = t_start,
-                          t_end = t_end)))
-    } else {
-      SL = c(1,3,1,3,1,6,3,5,4,7,3,4,10,8,4,3,1,2,5,3,
-             2,3,3,3,5,4,3,15,1,6,4,2,4,1,2,9,6,9,1,11,
-             1,4,6,6,6,6,6,3,1,5,1,2,11,3,1,3,8,9,2,4,
-             5,3,2,2,13,1,1,7,6,4,1,7,5,2,1,1,6,7,1,5,
-             3,1,2,3,3,2,9,14,4,16,7,18,4,10,9,3,8,2,15,8,
-             5,1,2,1,8,10,6,1,1,3,1,15,10,1,6,2,18,3,1,3,
-             4,10,10,18,1,4,4,3,6,3,6,4,5,5,7,8,1,1,4,5,
-             2,4,12,16,6,3,2,1,8,1,7,3,9,15,18,3,1,2,1,1,
-             3,1,8,2,5,7,9)
-      
-      si_data_AK <- data.frame(EL = as.integer(rep(0, 167)), 
-                               ER = as.integer(rep(1,167)), 
-                               SL = as.integer(SL), SR = as.integer(SL + 1))
-      
-      ## fixing the random seeds
-      MCMC_seed <- 1
-      overall_seed <- 2
-      mcmc_control <- make_mcmc_control(seed = MCMC_seed, burnin = 100)
-      dist <- "G"  # fitting a Gamma distribution for the SI
-      
-      empirical_si_config <- make_config(list(si_parametric_distr = dist, 
-                                              mcmc_control = mcmc_control, 
-                                              seed = overall_seed, 
-                                              n1 = 100, 
-                                              n2 = 100,
-                                              t_start = t_start,
-                                              t_end = t_end))
-      
-      si7 <- estimate_R(d1, 
-                        method = "si_from_data", 
-                        si_data = si_data_AK, 
-                        config = empirical_si_config)
-      
-    }
+        # incidence objects
+        io_1a <- incidence(dat1s$OnsetDate1, last_date = max_date)
+        ############
+        
+        #subset and create incidence object on the 21 days before truncation.
+        io_2 <- subset(io_1a, from = max(io_1a$dates-27), to = max(io_1a$dates-7))
+        
+        #Fit log linear model on the 21 day subset
+        i_fit <- incidence::fit(io_2)
+        #get_info(i_fit, "pred")
+        #io_2$counts
+        
+        ## Use model to predict daily counts for subsetted week.
+        
+        dtp <- as.Date(max(io_2$dates+1):max(io_2$dates+7),origin = "1970-01-01")
+        dtpf <- data.frame(dates.x = (max(i_fit$model$model$dates.x)+1):(max(i_fit$model$model$dates.x)+7))   
+        
+        extFit <- predict(i_fit$model, dtpf, interval = "confidence", level = 0.95)
+        y <- exp(extFit)
+        
+        projs <- data.frame(y, date = as.Date(dtp, origin = "1970-01-01"))
+        
+        ## Create dataset with fitted values substituded for the past 7-days.
+        io_1b <- incidence(dat1s$OnsetDate1, last_date = max_date-7)
+        dts <- c(io_1b$dates, projs$date)
+        cnts <- c(io_1b$counts, projs$fit)
+        cnts_L <- c(io_1b$counts, projs$lwr)
+        cnts_U <- c(io_1b$counts, projs$upr)
+        
+        #Create dataframes for Reff estimates
+        
+        TCe <- data.frame(dates = dts,I = cnts)
+        TCeL <- data.frame(dates = dts,I = cnts_L)
+        TCeU <- data.frame(dates = dts,I = cnts_U)
+        
+        
+        make_data <- function(x) {
+            t_start_e <- seq(2, length(x[["dates"]])-13)
+            t_end_e   <- t_start_e + 13
+            si7 <- estimate_R(x,
+                              method="parametric_si",
+                              config = make_config(list(
+                                  mean_si = 5.011976, 
+                                  std_si = 4.10405,
+                                  t_start = t_start_e,
+                                  t_end = t_end_e)))
+            
+            mean_e <- round(si7$R$`Mean(R)`,2)
+            low_e <- round(si7$R$`Quantile.0.025(R)`,2)
+            high_e <- round(si7$R$`Quantile.0.975(R)`,2)
+            date_e <- (si7$dates[-c(1:14)])
+            
+            dfx_e <- data.frame(mean = mean_e, low = low_e, high = high_e, date = as.Date(date_e, origin = "1970-01-01"))
+            return(dfx_e)
+        }
+        
+        dx1 <- make_data(TCe)
+        dxL <- make_data(TCeL)
+        dxU <- make_data(TCeU)
+        
+        #subset to observed and provisional and plot
+        dx1$Reff <- with(dx1, ifelse(date %in% dtp, "Provisional","Estimate"))
+        dxLs <- dxL %>% mutate(Reff = ifelse(date %in% dtp, "Provisional","Estimate")) %>%
+            filter(Reff == "Provisional")
+        dxUs <- dxU %>% mutate(Reff = ifelse(date %in% dtp, "Provisional","Estimate")) %>%
+            filter(Reff == "Provisional")
 
 ```
 
 **Interpretation:**
 
-At the beginning of the spread of the disease estimating R is subject to a lot of variability which is represented by the wide confidence intervals. After reaching its peak around March 16th, the effective reproductive number has continued to fall, and fell below zero around March 27th. The effective reproductive number has remained below zero with the current mitigation strategies. As the health mandates are lifted the effective reproductive number is likely to climb.  
+At the beginning of the spread of the disease estimating R is subject to a lot of variability which is represented by the wide confidence intervals. Estimates for smaller geographic regions often have extreme variability. Observing the general trends and status of Rt can provide an indication of the spread of COVID-19. Areas with multiple days without cases followed by a few days with cases will generally produce unstable Rt estimates due to the sporadic spread. If steady disease transmission begins to occur the estimates will stabilize.  
   
-Two plots are provide, one for the total incidence and one for local incidence only. While total incidence is of interest, it also includes imported cases. With travel restrictions in place being able to look at the spread of local cases only provides insights into how the disease is spreading locally and the effectiveness of both mitigation strategies and contact tracing efforts.    
+Two plots are provided, one for the total incidence (residents and non-residents) and one for residents only. With travel restrictions in place, being able to look at the spread of local cases only provides insights into how the disease is spreading locally and the effectiveness of both mitigation strategies and contact tracing efforts.    
 
 **References**  
 
@@ -172,4 +181,6 @@ Two plots are provide, one for the total incidence and one for local incidence o
 [[6]](https://www.r-project.org/) R: A Language and Environment for Statistical Computing, R Core Team, 2019.  
 
 **Note:**  
-last updated: 2020-04-29  
+The code that created this application is available at:   
+<https://github.com/AK-MCH-EPI/AK_COVID>  
+last updated: 2020-08-07  

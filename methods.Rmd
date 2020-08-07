@@ -24,7 +24,7 @@ Where, ‘y’ is the daily incidence, ‘t’ is the time in days from the star
 
 Update: We expanded the window from 14 - 21 days to inform the model. This was expanded to reduce the influence of a single data point on the overall model and smooth out projections. Due to the rise in cases, and delay in reporting and identifying/collecting the onset date, we based the model on our imputed estimate of the onset date when unknown. These methods are described below.  
 
-Assuming that without mitigation efforts the disease will spread at an exponential rate, we modeled the observed daily case counts over a 21-day period based on date of onset, and projected out 17 days. Due to the delay between an individual recognizing symptoms, being tested, and those results being reported to the State, when an onset date is not yet know, the current practice is to substitute the reported date. To account for the fact that most of these substitution dates occur during the most recent week, a simple imputation method was developed to assign a temporary onset date by sampling from a truncated gamma distribution with a median of 6 days. This imputation helps guard against making estimations that are attenuated due to limitations in data collection opposed to impacts related to the disease transmission. Additionally, due to future cases that are yet to be reported likely having onset dates during the most recent week of collection, correction methods or truncation of 7 days is also required. These methods guard against creating models that produce biased trajectories.
+Assuming that without mitigation efforts the disease will spread at an exponential rate, we modeled the observed daily case counts over a 21-day period based on date of onset, and projected out 17 days. Due to the delay between an individual recognizing symptoms, being tested, and those results being reported to the State, when an onset date is not yet known, the current practice is to substitute the reported date. To account for the fact that most of these substitution dates occur during the most recent week, a simple imputation method was developed to assign a temporary onset date by sampling from a truncated gamma distribution with a median of 6 days. This imputation helps guard against making estimations that are attenuated due to limitations in data collection opposed to impacts related to the disease transmission. Additionally, due to future cases that are yet to be reported likely having onset dates during the most recent week of collection, correction methods or truncation of 7 days is also required. These methods guard against creating models that produce biased trajectories.
 
 We truncated by seven days, due to the median duration from onset date to report date being approximately 6 days and attenuating in recent weeks. However, even with truncation and our imputation method, the results could be biased in the slope of the trajectory if the number of cases not yet reported substantially lags behind our estimation window. 
 
@@ -40,7 +40,7 @@ The code for imputing an onset date when unknown:
   ## set distribution for median
   set.seed(2020)
   library(heavy)
-  dist <- round(rtgamma(1000, shape =  6, truncation = 14)) 
+  dist <- round(rtgamma(50000, shape =  6, truncation = 14)) 
   zro <- table(dat1$duration)
   
   set.seed(19) 
@@ -80,4 +80,4 @@ Incidence of Dated Events. R package version 1.7.1.
 **Note:**  
 The code that created this application is available at:   
 <https://github.com/AK-MCH-EPI/AK_COVID>  
-last updated: 2020-07-02  
+last updated: 2020-08-07 

@@ -25,8 +25,11 @@ Deployed: 4/22/2020
 5/28/2020: <completed> Updated the API link to the table used to calculate max data. The prior table used wasn't updating.
 6/13/2020: <completed> Updated text on sidebar and expanded the y-axis on the mandates tab graphic
 6/20/2020: <Completed Phase I> Need to update models that are performing poorly to account for lag in specification of onset date and delay in testing
-6/24/2020: <plan> Include an add a selector for in/out of state residents for model, epi-curve, and Rt values
-6/27/2020: <plan> Request to add selector for region - Rt plot
-6/26/2020: <plan> Forked and working through California modeling code and adapting to Alaska to Validate
 7/07/2020: <completed> Updated Reff (Rt) calculation to a 14-day sliding window
 7/28/2020: <completed> Updated max_date as prior dataset didn't update
+
+Major version update:
+8/07/2020: <completed> Included selector for in/out of state residents for model, epi-curve, and Rt values
+8/07/2020: <completed> Added selector for region - Rt plot
+8/07/2020: <completed> Added moving average rate plot with selectors
+8/07/2020: <completed> Removed mandates graphic
