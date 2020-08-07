@@ -1,0 +1,12 @@
+name: AKCOVID_test
+title: AKCOVID_test
+username:
+account: ak-mch-epi
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2645486
+bundleId: 3488347
+url: https://ak-mch-epi.shinyapps.io/AKCOVID_test/
+when: 1596828006.84011
+asMultiple: FALSE
+asStatic: FALSE
