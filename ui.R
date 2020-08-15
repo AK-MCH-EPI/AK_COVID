@@ -8,6 +8,10 @@
 #ui<- function(req) {
 
 ui<- fluidPage(
+    
+    ##Google Analytics
+    tags$head(includeHTML(("GAnalytics.html"))),
+    
     navbarPage(
         " ",
         
@@ -32,7 +36,12 @@ ui<- fluidPage(
                  br(),
                  checkboxInput("cumcntCheckbox",
                                "Change to cumulative daily case count",
-                               FALSE), width=3),
+                               FALSE),
+                 br(),
+                 helpText(HTML('<p><b>Note:</b>
+                                Please be aware, due to an internal delay within the 
+                               ArcGIS server these data may update up to 1.5hrs behind 
+                               the hub site.</p>')), width=3),
         mainPanel(
             tabsetPanel(
                 tabPanel("Plots", 
@@ -98,7 +107,13 @@ ui<- fluidPage(
                                    <p> Cori, A. et al. A new framework and software to estimate
                                        time-varying reproduction numbers during epidemics (AJE 2013)</p>')),
                               br(),
-                    downloadButton("downloadRtData", "Download Data"), width=3),
+                    downloadButton("downloadRtData", "Download Data"),
+                    br(),
+                    br(),
+                    helpText(HTML('<p><b>Note:</b>
+                                Please be aware, due to an internal delay within the 
+                               ArcGIS server these data may update up to 1.5hrs behind 
+                               the hub site.</p>')), width=3),
                  mainPanel(
                      tabsetPanel(
                          tabPanel("Plot of Rt", 
@@ -144,7 +159,12 @@ ui<- fluidPage(
                                  selected = "Resident"),
                      br(),
                      downloadButton("downloadRateData", "Download Data"),
-                 width = 3),
+                     br(),
+                     br(),
+                     helpText(HTML('<p><b>Note:</b>
+                                Please be aware, due to an internal delay within the 
+                               ArcGIS server these data may update up to 1.5hrs behind 
+                               the hub site.</p>')),width = 3),
                  
                  mainPanel(
                      tags$style(type="text/css",

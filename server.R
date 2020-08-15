@@ -1,9 +1,11 @@
 library(shiny)
 
-source("global.R")
+
 
 server <- function(input,output,session){
 
+source("global.R")
+  
 ### Epi data - projections
   
     global_epi_data <- reactive({

@@ -5,7 +5,6 @@
 ###################################################################################
 
 # Author: Jared Parrish
-#
 # Copyright (C) 2020, State of Alaska, Division of Public Health
 # 
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -50,52 +49,26 @@ library(shinyWidgets)
 sapply(list.files("R", full.names = T), source)
 
 ## connect to Alaksa data hub through the API: Onset Date Table
-url <- "https://opendata.arcgis.com/datasets/c1b6c31d09b44c33962570950456feea_0.geojson"
+ url <- "https://opendata.arcgis.com/datasets/c1b6c31d09b44c33962570950456feea_0.geojson"
 
-da <- jsonlite::fromJSON(url)
-base::class(da)
-da %>% str()
+dat1 <- setdata(url)
+ 
 
-# set data imported data as an object update to attributes 
-dat1 <- tibble::as_tibble(da$features$properties) 
-
-# Fix dates 
-# dat1$OnsetDate <- as.Date(as.POSIXct(dat1$OnsetDate/1000, origin = "1970-01-01", tz = "America/Anchorage"))
-
-dat1$OnsetDate <- as.Date(substr(dat1$OnsetDate,1,10))
-
-
-### Onset date imputation  
-# calcuate duration in days.
-dat1$ReportDate <- as.Date(with(dat1, ifelse(OnsetDateReplaced == 2, dat1$OnsetDate,
-                                             NA)), origin = "1970-01-01")
-dat1$duration <- dat1$ReportDate - dat1$OnsetDate
-
-
-## set distribution for median among most recent 14 days duration for Gamma dist
-## had to modify and hard code this due to change in data structure, and assume it is constant.
-set.seed(2020)
-#dist <- round(rgamma(1000, shape =  sts$Y[3])) 
-#use a truncated gamma distribution to ensure that the selected durations are consistant
-# with observed data and in a 2-week range and modify shape from 7 to 6.
-
-dist <- round(rtgamma(50000, shape =  6, truncation = 14)) 
-
-#zro <- table(dat1$duration<=0)[2] # isolate duration = 0 cases and impute values
-zro <- table(dat1$duration)
-set.seed(19) 
-smp1 <- sample(dist, zro)
-dat1$duration_imp <- ifelse(dat1$duration == 0, smp1, dat1$duration)
-
-dat1$OnsetDate1 <- as.Date(ifelse(is.na(dat1$duration), dat1$OnsetDate,
-                                  dat1$OnsetDate - dat1$duration_imp),
-                           origin = "1970-01-01")
-
-# type of travel
-dat1$type <- with(dat1, ifelse(SpecificAcquisition %in% c("Community","Secondary"), "local",
-                               ifelse(SpecificAcquisition == "Travel", "imported",
-                                      ifelse(SpecificAcquisition == "Could Not Be Determined", 
-                                             "Unknown","Under Investigation"))))
+#Check for updates on the hub every 5min
+getdata <- function(url){
+   
+   dat1 <- reactivePoll(300000,
+                        checkFunc = function(){
+                          da <- jsonlite::fromJSON(url)
+                          nrow(da$features$properties)
+                        },
+                        valueFunc = function(){
+                          setdata(url)
+                        })
+   output$dataTable < renderTable({dat1()})
+   
+}
+ 
 
 ### Set date range
 dt <- as.Date(as.Date(min(dat1$OnsetDate)):as.Date(max(dat1$OnsetDate)),origin = "1970-01-01")
