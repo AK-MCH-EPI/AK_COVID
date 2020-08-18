@@ -49,10 +49,13 @@ library(shinyWidgets)
 sapply(list.files("R", full.names = T), source)
 
 ## connect to Alaksa data hub through the API: Onset Date Table
- url <- "https://opendata.arcgis.com/datasets/c1b6c31d09b44c33962570950456feea_0.geojson"
-
-dat1 <- setdata(url)
+## The geojson file is having a large delay, parsed the geoservice API as a temp fix
+# url <- "https://opendata.arcgis.com/datasets/c1b6c31d09b44c33962570950456feea_0.geojson"
+# dat1 <- setdata(url)
  
+url8 <- "https://services1.arcgis.com/WzFsmainVTuD5KML/arcgis/rest/services/Onset_Date/FeatureServer/0/query?where=OnsetDate%20%3E%3D%20TIMESTAMP%20'2020-10-15%2000%3A00%3A00'%20AND%20OnsetDate%20%3C%3D%20TIMESTAMP%20'2020-11-01%2000%3A00%3A00'&outFields=*&outSR=4326&f=json"
+dat1 <- setdata(url8)
+
 
 #Check for updates on the hub every 5min
 getdata <- function(url){

@@ -33,3 +33,5 @@ Major version update:
 8/07/2020: <completed> Added selector for region - Rt plot
 8/07/2020: <completed> Added moving average rate plot with selectors
 8/07/2020: <completed> Removed mandates graphic
+8/14/2020: <completed> Added auto update feature to make sure data is refreshed
+8/17/2020: <TEMP> Modified API until the geojson API delay is reduced!
