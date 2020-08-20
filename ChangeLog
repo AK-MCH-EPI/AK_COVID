@@ -35,3 +35,4 @@ Major version update:
 8/07/2020: <completed> Removed mandates graphic
 8/14/2020: <completed> Added auto update feature to make sure data is refreshed
 8/17/2020: <TEMP> Modified API until the geojson API delay is reduced!
+8/19/2020: <TEMP> Roll back to use of GeoJSON due to error with geoservice code

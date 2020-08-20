@@ -159,10 +159,10 @@ source("global.R")
                                                    to = max(io_1$dates-7)))
                 
                 t1 <- ggplot() +
-                    geom_line(data=io_1cum_df, aes(x = dates, y = counts),size = 1, color = "#ffb923") +
-                    geom_point(data=io_1cum_df, aes(x = dates, y = counts),size = 1, color = "#ffb923") +
+                    geom_line(data=io_1cum_df, aes(x = dates, y = counts),size = 1.5, color = "#ffb923") +
+                    geom_point(data=io_1cum_df, aes(x = dates, y = counts),size = 1.5, color = "#ffb923") +
                     
-                    geom_point(data = tnk_c, aes(x = dates, y = counts), color = "#999999", size = 1) +
+                    geom_point(data = tnk_c, aes(x = dates, y = counts), color = "#999999", size = 1.5) +
                     
                     geom_ribbon(data = projs, aes(x = date, ymin = lwr, ymax = upr), 
                                 alpha = 0.15, fill = "#0a306a")+
