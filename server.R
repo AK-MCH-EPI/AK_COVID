@@ -1,7 +1,5 @@
 library(shiny)
 
-
-
 server <- function(input,output,session){
 
 source("global.R")
@@ -92,18 +90,22 @@ source("global.R")
         io_2dta <- as.data.frame(io_1a)
         
         p1<-ggplot() +
-            geom_bar(data = io_1dta, aes(x = dates, y = counts), stat = "identity",
+            geom_bar(data = io_1dta, aes(x = dates, y = counts,
+                                         text = paste("Date:",dates,"<br>count:",counts) ), stat = "identity",
                      fill = "#ffb923", color = "white", width = 1) +
-            geom_bar(data = tnk, aes(x = dates, y = counts), stat = "identity", 
+            geom_bar(data = tnk, aes(x = dates, y = counts,
+                                     text = paste("Date:",dates,"<br>count:",counts)), stat = "identity", 
                      fill = "#999999", color = "white", width = 1) +
-            
-            geom_line(aes(date, fit), projs,linetype="dashed", size = 1, color = "#0a306a") +
+            geom_line(aes(x=date, y=fit,group=1,
+                          text = paste("Date:",date,"<br>Projected count:",round(fit,2),
+                                       "<br>LowerCI:",round(lwr,2),"<br>UpperCI:",round(upr,2))), 
+                      projs,linetype="dashed", size = 1, color = "#0a306a") +
             geom_ribbon(data = projs, aes(x = date, ymin = lwr, ymax = upr), 
-                        alpha = 0.15,fill = "#0a306a") +
-            
+                        alpha = 0.20,fill = "#0a306a") +
             #xlim(min(dtr$date),max(dtr$date)) +
-            coord_cartesian(ylim = c(0, max(io_1$counts)+50)) +
-            scale_x_date(breaks = pretty(dtr$date, n = 10),date_labels = "%d %b") +
+            coord_cartesian(ylim = c(0, max(io_1$counts)*1.7)) +
+            scale_x_date(breaks = pretty(dtr$date, n = 10),date_labels = "%d %b",
+                         limits = c(((max_date) %m-% months(input$inSlide)),(max_date+10))) +
             theme_minimal() +
             #theme(plot.caption = element_text(hjust = 0)) +
             labs(title=paste("Epidemic curve by onset date,", global_epi_data()$c_ex),
@@ -113,7 +115,7 @@ source("global.R")
                   legend.position = c(0, 0.95),
                   axis.title.x=element_blank()) 
         
-        ggplotly(p1) %>%
+        ggplotly(p1, tooltip = c("text")) %>%
             layout (title = list(text = paste0('Epidemic curve by onset date,',' ', global_epi_data()$locate,
                                                '<br>',
                                                '<sup>',
@@ -159,18 +161,30 @@ source("global.R")
                                                    to = max(io_1$dates-7)))
                 
                 t1 <- ggplot() +
-                    geom_line(data=io_1cum_df, aes(x = dates, y = counts),size = 1.5, color = "#ffb923") +
-                    geom_point(data=io_1cum_df, aes(x = dates, y = counts),size = 1.5, color = "#ffb923") +
+                    geom_line(data=io_1cum_df, 
+                              aes(x = dates, y = counts,group = 1,
+                                  text = paste("Date:",dates,"<br>count:",counts)),
+                              size = 1.5, color = "#ffb923") +
+                    geom_point(data=io_1cum_df, 
+                               aes(x = dates, y = counts,group = 1,
+                                   text = paste("Date:",dates,"<br>count:",counts)),
+                               size = 1.5, color = "#ffb923") +
                     
-                    geom_point(data = tnk_c, aes(x = dates, y = counts), color = "#999999", size = 1.5) +
+                    geom_point(data = tnk_c, 
+                               aes(x = dates, y = counts, group = 1,
+                                   text = paste("Date:",dates,"<br>count:",counts)), 
+                               color = "#999999", size = 1.5) +
                     
-                    geom_ribbon(data = projs, aes(x = date, ymin = lwr, ymax = upr), 
-                                alpha = 0.15, fill = "#0a306a")+
+                    geom_ribbon(data = projs, 
+                                aes(x = date, ymin = lwr, ymax = upr), 
+                                alpha = 0.20, fill = "#0a306a")+
                     
                     scale_x_date(breaks = pretty(dtr$date, n = 10), date_labels = "%d %b",
-                                 limits = c(min(dtr$date), max(dtr$date))) +
-                    coord_cartesian(ylim = c(0, max(io_1cum_df$counts)+2000)) +
-                    geom_line(aes(date, fit), 
+                                 limits = c(((max_date) %m-% months(input$inSlide)),(max_date+10))) +
+                    coord_cartesian(ylim = c(0, max(io_1cum_df$counts)*1.7)) +
+                    geom_line(aes(date, fit, group = 1,
+                                  text = paste("Date:",date,"<br>Projected count:",round(fit,2),
+                                               "<br>LowerCI:",round(lwr,2),"<br>UpperCI:",round(upr,2))), 
                               projs,linetype="dashed", size = 0.5, color = "#0a306a") +
                     theme_minimal() +
                     labs(title = "Cumulative daily incidence by onset date, Alaska",
@@ -183,7 +197,7 @@ source("global.R")
                 
                 ### plotly version
                 
-                ggplotly(t1) %>%
+                ggplotly(t1, tooltip = c("text")) %>%
                     layout(title = list(text = paste0('Epidemic curve by onset date,',' ', global_epi_data()$locate,
                                                       '<br>',
                                                       '<sup>',
@@ -347,31 +361,28 @@ source("global.R")
   
     output$r.plot <- renderPlotly({
         
-        dx1 <- r_data()$dx1[-c(1:28),]
-        dxLs <- r_data()$dxLs
-        dxUs <- r_data()$dxUs
-        dx3 <- r_data()$dx3[-c(1:28),]
+        # dx1 <- r_data()$dx1
+        # dxLs <- r_data()$dxLs
+        # dxUs <- r_data()$dxUs
+        dx3 <- r_data()$dx3
+        dx3 <- subset(dx3, date >= (max(dx3$date) %m-% months(input$inSlide1)))
         
         a <- ggplot()+
             geom_hline(yintercept = 1, linetype="dotdash", size = 1, color = "red")+
-            geom_line(data = dx1, aes(x=date, y = mean, linetype = Reff), color = "#0a306a", size = 1) +
-            # scale_color_manual(values=c("#999999", "#E69F00")) +
-            #scale_size_manual(values = c(1,0.7))+
+            geom_line(data = dx3, aes(x=date, y = mean, linetype = Reff, group = Reff,
+                                  text = paste("Date:",date,"<br>Reff value:",mean,"<br>LowerCI:",lower,
+                                               "<br>UpperCI:",upper)), color = "#0a306a", size = 1.5) +
             scale_linetype_manual(values = c("solid","dotted")) +
-            # geom_line(data = dxLs, aes(x=date, y = mean),size = 0.5, color = "#E69F00", linetype = "dotted") +
-            # geom_line(data = dxUs, aes(x=date, y = mean),size = 0.5, color = "#E69F00", linetype = "dotted") +
             geom_ribbon(data = dx3, aes(x = date, ymin = lower, ymax = upper),
-                         alpha = 0.10, fill = "#0a306a")+
-            # scale_fill_manual(values = c("#0a306a", "#E69F00"), name = "Reff") +
+                         alpha = 0.20, fill = "#0a306a")+
             ylab("Rt")+
             xlab(" ")+
-            coord_cartesian(ylim = c(0, 3)) +
             theme_minimal()+
-            #theme(legend.position='none') +
             labs(title= paste("Time-varying reproductive number (Rt),",r_data()$locate))  +
-            scale_x_date(breaks = pretty( dx1$date, n = 10),date_labels = "%d %b") 
-        
-        ggplotly(a)
+            scale_x_date(breaks = pretty( dx3$date, n = 10),date_labels = "%d %b") +
+            coord_cartesian(ylim = c(0, 3)) 
+            
+        ggplotly(a, tooltip = c("text"))
         
         
     })
@@ -487,11 +498,16 @@ source("global.R")
         
         a <- ggplot() +
             geom_rect(data = rate_data()$alert_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                                                       fill = Alert_Level))+
+                                                       fill = Alert_Level,
+                                                       text = paste("Alert Level:",Alert_Level)))+
             scale_fill_manual(values = c("#df212a","#f37b21","#faea5a")) +
             geom_ribbon(data = rate_data()$temp2a, aes(x = dates, ymin = lowerCI, ymax = upperCI),
                         alpha = 0.20, fill = "black") +
-            geom_line(data = rate_data()$temp2a, aes(x = dates, y = rate), colour = "black") +
+            geom_line(data = rate_data()$temp2a, aes(x = dates, y = rate, group = 1,
+                                                     text = paste("Date:",dates,"<br>Rate:",rate,
+                                                                  "<br>LowerCI:",lowerCI,
+                                                                  "<br>UpperCI:",upperCI)), 
+                      colour = "black") +
             ylab("rate per 100k residents")+
             xlab("")+
             #ylim(0,max(temp2a$rate)+10)+
@@ -502,7 +518,7 @@ source("global.R")
                               "per 100,000 population,", ' ',input$rgn)) +
             theme_minimal()
         
-        ggplotly(a) 
+        ggplotly(a, tooltip = c("text")) 
         
     })
     

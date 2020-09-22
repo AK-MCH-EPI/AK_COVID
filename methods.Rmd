@@ -28,7 +28,7 @@ Assuming that without mitigation efforts the disease will spread at an exponenti
 
 We truncated by seven days, due to the median duration from onset date to report date being approximately 6 days and attenuating in recent weeks. However, even with truncation and our imputation method, the results could be biased in the slope of the trajectory if the number of cases not yet reported substantially lags behind our estimation window. 
 
-We used the most recent 21-day period minus the 7-day truncation period to project out 17 days (14 day’s beyond the last report date). The use of this 21 day window for the statewide estimate was chosen by convention with short-term projections, where the assumption is that more recent trends likely better approximate the current trajectory.   
+We used the most recent 21-day period minus the 7-day truncation period to project out 17 days (10 day’s beyond the last report date). The use of this 21 day window for the statewide estimate was chosen by convention with short-term projections, where the assumption is that more recent trends likely better approximate the current trajectory.   
 
 The code for imputing an onset date when unknown:  
 ```{r eval = FALSE}

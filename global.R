@@ -73,9 +73,11 @@ getdata <- function(url){
 ### Set date range
 dt <- as.Date(as.Date(min(dat1$OnsetDate)):as.Date(max(dat1$OnsetDate)),origin = "1970-01-01")
 
-### Set Max date
+### Set Max date 
 max_date <- max(dat1$OnsetDate)
 
+### Set number of months of outbrek
+mnths_dsp <- interval((min(dt)), (max_date+10)) %/% months(1)
 
 #### elements ####
 

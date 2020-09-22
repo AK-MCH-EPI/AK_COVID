@@ -34,14 +34,18 @@ ui<- fluidPage(
                                TRUE),
                  textOutput("value_ex"),
                  br(),
+                 sliderInput("inSlide", "Number of prior months to display:",
+                             min = 1, max = mnths_dsp,
+                             value = 3
+                 ),
                  checkboxInput("cumcntCheckbox",
                                "Change to cumulative daily case count",
                                FALSE), 
-                 helpText(HTML('<p><b>Note:</b>
-                               We are currently experiencing a delay between when the hub site is 
-                               updated and the data is made available through the GeoJSON API file. 
-                               These models utilize an API file which may result in the estimates 
-                               temporarily lagging behind the site update. .</p>')),
+                 # helpText(HTML('<p><b>Note:</b>
+                 #               We are currently experiencing a delay between when the hub site is 
+                 #               updated and the data is made available through the GeoJSON API file. 
+                 #               These models utilize an API file which may result in the estimates 
+                 #               temporarily lagging behind the site update. .</p>')),
                  width=3),
         mainPanel(
             tabsetPanel(
@@ -101,7 +105,10 @@ ui<- fluidPage(
                      radioButtons("inRes_select", "Select case type",
                                  c("Resident","Resident & non-Resident")),
                      helpText(HTML('<p> <i>Resident cases occurring outside Alaska excluded.</i> </p>')),
-                     
+                     sliderInput("inSlide1", "Number of prior months to display:",
+                                 min = 1, max = mnths_dsp,
+                                 value = 3
+                     ),
                     actionButton("Rt_explain", "Click to learn about Rt"),
                               br(),
                               br(),
@@ -110,13 +117,14 @@ ui<- fluidPage(
                                        time-varying reproduction numbers during epidemics (AJE 2013)</p>')),
                               br(),
                     downloadButton("downloadRtData", "Download Data"),
-                    br(),
-                    br(),
-                    helpText(HTML('<p><b>Note:</b>
-                               We are currently experiencing a delay between when the hub site is 
-                               updated and the data is made available through the GeoJSON API file. 
-                               These models utilize an API file which may result in the estimates 
-                               temporarily lagging behind the site update. .</p>')),width=3),
+                    # br(),
+                    # br(),
+                    # helpText(HTML('<p><b>Note:</b>
+                    #            We are currently experiencing a delay between when the hub site is 
+                    #            updated and the data is made available through the GeoJSON API file. 
+                    #            These models utilize an API file which may result in the estimates 
+                    #            temporarily lagging behind the site update. .</p>')),
+                    width=3),
                  mainPanel(
                      tabsetPanel(
                          tabPanel("Plot of Rt", 
@@ -162,13 +170,14 @@ ui<- fluidPage(
                                  selected = "Resident"),
                      br(),
                      downloadButton("downloadRateData", "Download Data"),
-                     br(),
-                     br(),
-                     helpText(HTML('<p><b>Note:</b>
-                               We are currently experiencing a delay between when the hub site is 
-                               updated and the data is made available through the GeoJSON API file. 
-                               These models utilize an API file which may result in the estimates 
-                               temporarily lagging behind the site update. .</p>')),width = 3),
+                     # br(),
+                     # br(),
+                     # helpText(HTML('<p><b>Note:</b>
+                     #           We are currently experiencing a delay between when the hub site is 
+                     #           updated and the data is made available through the GeoJSON API file. 
+                     #           These models utilize an API file which may result in the estimates 
+                     #           temporarily lagging behind the site update. .</p>')),
+                     width = 3),
                  
                  mainPanel(
                      tags$style(type="text/css",
