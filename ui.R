@@ -8,7 +8,7 @@
 #ui<- function(req) {
 
 ui<- fluidPage(
-    
+    add_busy_spinner(spin = "circle",color = "#ffb923"),
     ##Google Analytics
     tags$head(includeHTML(("GAnalytics.html"))),
     

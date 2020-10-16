@@ -44,6 +44,7 @@ library(epitools)
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
+library(shinybusy)
 
 ## read data and organize for processing ####
 sapply(list.files("R", full.names = T), source)
