@@ -5,9 +5,9 @@ account: ak-mch-epi
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2125824
-bundleId: 3532559
+bundleId: 3808097
 url: https://ak-mch-epi.shinyapps.io/COVID_APP/
-when: 1597814441.54233
+when: 1604268657.6534
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .RData|ChangeLog|README.md
+ignoredFiles: .RData|ChangeLog|debug.log|README.md|test_update.R|R/cnty.rate.R

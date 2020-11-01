@@ -49,33 +49,67 @@ library(shinybusy)
 ## read data and organize for processing ####
 sapply(list.files("R", full.names = T), source)
 
-## connect to Alaksa data hub through the API: Onset Date Table
+## connect to Alaksa data hub through the API: Onset Date Table this API is having issues
+# 
+# url <- "https://opendata.arcgis.com/datasets/c1b6c31d09b44c33962570950456feea_0.geojson"
+# dat1 <- setdata(url)
 
-url <- "https://opendata.arcgis.com/datasets/c1b6c31d09b44c33962570950456feea_0.geojson"
-dat1 <- setdata(url)
 
+### Temp process using the geoservice: requires 2000k batch loading
 
-#Check for updates on the hub every 5min
-getdata <- function(url){
-   
-   dat1 <- reactivePoll(300000,
-                        checkFunc = function(){
-                          da <- jsonlite::fromJSON(url)
-                          nrow(da$features$properties)
-                        },
-                        valueFunc = function(){
-                          setdata(url)
-                        })
-   output$dataTable < renderTable({dat1()})
-   
+# Step 1: set up lists and objects
+batch <<- list()
+ctpt1 <<- 0
+status <<- TRUE
+
+url_t <<- "https://services1.arcgis.com/WzFsmainVTuD5KML/arcgis/rest/services/Onset_Date/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson&resultOffset="
+
+while(status == TRUE) {
+   if(ctpt1 == 0){
+      urlt <<- paste0(url_t,ctpt1)
+      t_dat <<- jsonlite::fromJSON(urlt)
+      batch <<- append(batch, list(t_dat))
+      ctpt1 <<- ctpt1 + nrow(t_dat$features$properties)
+      status <<- !is.null(t_dat$properties$exceededTransferLimit)
+   } 
+   if(ctpt1 > 0){
+      urlt <<- paste0(url_t,ctpt1)
+      t_dat <<- jsonlite::fromJSON(urlt)
+      ctpt1 <<- ctpt1 + nrow(t_dat$features$properties)
+      batch <<- append(batch, list(t_dat))
+      status <<- !is.null(t_dat$properties$exceededTransferLimit)
+   }
 }
+
+# Step 5: extract data and bind together
+
+batch1 <<- lapply(batch, function(x) {x$features$properties})
+dat <<- (do.call(rbind, batch1))
+
+# #Check for updates on the hub every 5min: will determine if this needed. pointing to the geoservice so might not be
+# getdata <- function(url){
+#    
+#    dat1 <- reactivePoll(300000,
+#                         checkFunc = function(){
+#                           da <- jsonlite::fromJSON(url)
+#                           nrow(da$features$properties)
+#                         },
+#                         valueFunc = function(){
+#                           setdata(url)
+#                         })
+#    output$dataTable < renderTable({dat1()})
+#    
+# }
  
+
+# Step 6: Organize data
+dat1 <<- setdata(dat)
 
 ### Set date range
 dt <- as.Date(as.Date(min(dat1$OnsetDate)):as.Date(max(dat1$OnsetDate)),origin = "1970-01-01")
 
 ### Set Max date 
-max_date <- max(dat1$OnsetDate)
+max_date <-  max(dat1$OnsetDate)
 
 ### Set number of months of outbrek
 mnths_dsp <- interval((min(dt)), (max_date+10)) %/% months(1)

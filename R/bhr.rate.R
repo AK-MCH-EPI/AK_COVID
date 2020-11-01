@@ -16,7 +16,7 @@ d2 <- ibr3 %>%
   group_by(Region) %>%
   mutate(roll_mean = rollmean(Cases, 7, na.pad = T, align = "right"),
          window = "7 day window")
-d2$roll_mean[is.na(d2$roll_mean)]<-0
+d2$roll_mean[is.na(d2$roll_mean)] <- 0
 
 #population totals for rates
 # popBHR <- b_c_crosswalk %>%
@@ -49,7 +49,7 @@ d5 <- ibr3 %>%
   group_by(Region) %>%
   mutate(roll_mean = rollmean(Cases, 14, na.pad = T, align = "right"),
          window = "14 day window")
-d5$roll_mean[is.na(d5$roll_mean)]<-0
+d5$roll_mean[is.na(d5$roll_mean)] <- 0
 
 #population totals for rates
 d6 <- merge(d5,popBHR, by.x = "Region", by.y = "BHR_Name", all.x = T)

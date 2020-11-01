@@ -16,7 +16,7 @@ cnty_av_rates <- function(dataset){
      group_by(Region) %>%
      mutate(roll_mean = rollmean(Cases, 7, na.pad = T, align = "right"),
             window = "7 day window")
-   c2$roll_mean[is.na(c2$roll_mean)]<-0
+   c2$roll_mean[is.na(c2$roll_mean)] <- 0
   
    #population totals for rates
    popCensus <- b_c_crosswalk %>%
@@ -50,7 +50,7 @@ cnty_av_rates <- function(dataset){
      group_by(Region) %>%
      mutate(roll_mean = rollmean(Cases, 14, na.pad = T, align = "right"),
             window = "14 day window")
-   c5$roll_mean[is.na(c5$roll_mean)]<-0
+   c5$roll_mean[is.na(c5$roll_mean)] <- 0
   
    #population totals for rates
   

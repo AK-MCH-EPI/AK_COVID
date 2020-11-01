@@ -23,7 +23,7 @@ i3 <- i2 %>%
   arrange(dates) %>%
   mutate(daily_average = rollmean(counts, 7, na.pad = T, align = "right"),
          window = "7 day window")
-i3$daily_average[is.na(i3$daily_average)]<-0
+i3$daily_average[is.na(i3$daily_average)] <- 0
 #calculate rates and CI
 i3$rate <- round(((pois.daly(i3$daily_average, sumpop)$rate)*100000),2)
 i3$lowerCI <- round(((pois.daly(i3$daily_average, sumpop)$lower)*100000),2)
@@ -33,7 +33,7 @@ i4 <- i2 %>%
   arrange(dates) %>%
   mutate(daily_average = rollmean(counts, 14, na.pad = T, align = "right"),
          window = "14 day window")
-i4$daily_average[is.na(i4$daily_average)]<-0
+i4$daily_average[is.na(i4$daily_average)] <- 0
 #calculate rates and CI
 i4$rate <- round(((pois.daly(i4$daily_average, sumpop)$rate)*100000),2)
 i4$lowerCI <- round(((pois.daly(i4$daily_average, sumpop)$lower)*100000),2)

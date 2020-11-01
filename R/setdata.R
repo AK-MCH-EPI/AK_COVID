@@ -1,17 +1,22 @@
 # Function for reading in and manipulating the Onset date data.
 
-setdata <- function(url){
+setdata <<- function(url){
 
+## with GeosJSON
 ### Modified the code as a temp fix due to the delay in the geojson file
-da <- jsonlite::fromJSON(url)
-base::class(da)
+# da <- jsonlite::fromJSON(url)
+# base::class(da)
+# 
+# # set data imported data as an object update to attributes
+# dat1 <- tibble::as_tibble(da$features$properties)
 
-# set data imported data as an object update to attributes
-dat1 <- tibble::as_tibble(da$features$properties)
+#With GeoService
 
-dat1$OnsetDate <- as.Date(substr(dat1$OnsetDate,1,10))
+dat1 <- url 
   
-#dat1$OnsetDate <- as.Date(as.POSIXct(dat1$OnsetDate/1000, origin = "1970-01-01", tz = "America/Anchorage"))
+#dat1$OnsetDate <- as.Date(substr(dat1$OnsetDate,1,10))
+  
+dat1$OnsetDate <- as.Date(as.POSIXct(dat1$OnsetDate/1000, origin = "1970-01-01", tz = "America/Anchorage"))
   
 ### End Temp code  
   
