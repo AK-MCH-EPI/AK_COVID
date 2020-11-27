@@ -8,10 +8,10 @@
 #ui<- function(req) {
 
 ui <- fluidPage(
-    add_busy_spinner(spin = "circle",color = "red", margins = c(300,600),
+    add_busy_spinner(spin = "circle",color = "springgreen", margins = c(300,600),
                      position = "top-left", height = "75px", width = "75px"),
     ##Google Analytics
-    tags$head(includeHTML(("GAnalytics.html"))),
+    #tags$head(includeHTML(("GAnalytics.html"))),
     
     navbarPage(
         " ",
@@ -42,12 +42,10 @@ ui <- fluidPage(
                  checkboxInput("cumcntCheckbox",
                                "Change to cumulative daily case count",
                                FALSE), 
-                 # helpText(HTML('<p><b>Note:</b>
-                 #               We are currently experiencing a delay between when the hub site is 
-                 #               updated and the data is made available through the GeoJSON API file. 
-                 #               These models utilize an API file which may result in the estimates 
-                 #               temporarily lagging behind the site update. .</p>')),
-                 width=3),
+                  helpText(HTML('<p><b>Note:</b>
+                            Model updated 11/24/2020 to adjust for reporting delay and changes
+                            in base tables. See the Methods tab for more details.</p>')),
+                   width=3),
         mainPanel(
             tabsetPanel(
                 tabPanel("Plots", 
@@ -61,8 +59,8 @@ ui <- fluidPage(
                 ),
                 tabPanel("Interpretation",
                          helpText("This graph represents the daily COVID-19 case count in Alaska (yellow).",
-                                  "Date of symptom onset was used. Gray bars represent data from the most recent",
-                                  "7 days, which was not included in the analysis due to incomplete data/delay in reporting.",
+                                  "Simulated date of symptom onset was used. Gray bars represent data from the most recent",
+                                  "9 days, which are not included in the analysis due to incomplete data/delay in reporting.",
                                   "The blue dotted line represents the predicted daily case trajectory (assumed exponential),",
                                   "with the gray band representing the 95% Confidence Interval (estimate range) of the projection.",
                                   "For a complete description of the methods please view the Methods tab.",
@@ -93,6 +91,7 @@ ui <- fluidPage(
                          includeMarkdown("methods.Rmd")
                 )
              ))),
+        
         tabPanel("Reproductive number",
                  sidebarPanel(
                      selectInput("inSelectReg1",
@@ -104,28 +103,28 @@ ui <- fluidPage(
                                        variability, resulting in high fluctuations that are
                                        heavily influenced by clustered outbreaks.</p>')),
                      radioButtons("inRes_select", "Select case type",
-                                 c("Resident","Resident & non-Resident")),
+                                  c("Resident","Resident & non-Resident")),
                      helpText(HTML('<p> <i>Resident cases occurring outside Alaska excluded.</i> </p>')),
                      sliderInput("inSlide1", "Number of prior months to display:",
                                  min = 1, max = mnths_dsp,
                                  value = 3
                      ),
-                    actionButton("Rt_explain", "Click to learn about Rt"),
-                              br(),
-                              br(),
-                    helpText(HTML('<p> <b>Reference:</b> </p>
+                     actionButton("Rt_explain", "Click to learn about Rt"),
+                     br(),
+                     br(),
+                     helpText(HTML('<p> <b>Reference:</b> </p>
                                    <p> Cori, A. et al. A new framework and software to estimate
                                        time-varying reproduction numbers during epidemics (AJE 2013)</p>')),
-                              br(),
-                    downloadButton("downloadRtData", "Download Data"),
-                    # br(),
-                    # br(),
-                    # helpText(HTML('<p><b>Note:</b>
-                    #            We are currently experiencing a delay between when the hub site is 
-                    #            updated and the data is made available through the GeoJSON API file. 
-                    #            These models utilize an API file which may result in the estimates 
-                    #            temporarily lagging behind the site update. .</p>')),
-                    width=3),
+                     br(),
+                     downloadButton("downloadRtData", "Download Data"),
+                     # br(),
+                     # br(),
+                     # helpText(HTML('<p><b>Note:</b>
+                     #            We are currently experiencing a delay between when the hub site is 
+                     #            updated and the data is made available through the GeoJSON API file. 
+                     #            These models utilize an API file which may result in the estimates 
+                     #            temporarily lagging behind the site update.</p>')),
+                     width=3),
                  mainPanel(
                      tabsetPanel(
                          tabPanel("Plot of Rt", 
@@ -148,13 +147,16 @@ ui <- fluidPage(
                          tabPanel("Methods",
                                   includeMarkdown("methodsEffectiveR.Rmd")
                          )))),
+        
         tabPanel("Average Daily Rate",
                  sidebarPanel(
                      # radioButtons("geo", "Select Area:",
                      #              c("Statewide","Behavioral Health Region","County")), 
                      radioButtons("geo", "Select Area:",
                                   c("Statewide","Behavioral Health Region")),
-                     uiOutput("factor_dropdown"), 
+                     #uiOutput("factor_dropdown"),
+                     selectInput("rgn", "Select Region:",
+                                 choices = "", selected = ""),
                      helpText(HTML('<p><b>CAUTION:</b>
                                    Areas with a few number of cases have extreme
                                    variability resulting in unstable rates over time as represented 
@@ -171,13 +173,12 @@ ui <- fluidPage(
                                  selected = "Resident"),
                      br(),
                      downloadButton("downloadRateData", "Download Data"),
-                     # br(),
-                     # br(),
-                     # helpText(HTML('<p><b>Note:</b>
-                     #           We are currently experiencing a delay between when the hub site is 
-                     #           updated and the data is made available through the GeoJSON API file. 
-                     #           These models utilize an API file which may result in the estimates 
-                     #           temporarily lagging behind the site update. .</p>')),
+                      br(),
+                      br(),
+                      helpText(HTML('<p><b>Note:</b>
+                        This alert level calculation uses Report date daily totals 
+                        to align closer with national methods and estimates.
+                        </p>')),
                      width = 3),
                  
                  mainPanel(
@@ -185,21 +186,23 @@ ui <- fluidPage(
                                 ".shiny-output-error { visibility: hidden; }",
                                 ".shiny-output-error:before { visibility: hidden; }"
                      ),
-                                  br(),
-                                  plotlyOutput("rate.plot"),
-                                  br(),
-                                  valueBoxOutput("AlertLevel.box", width = 20),
-                                  
-                                  actionButton("Alert_explain", "What does this mean?"),
-                                  br(),
-                                  br(),
- 
-                                 HTML("<p> <b>The Alaska DHSS standard for determining Alert level uses 
+                     br(),
+                     plotlyOutput("rate.plot"),
+                     br(),
+                     valueBoxOutput("AlertLevel.box", width = 20),
+                     
+                     actionButton("Alert_explain", "What does this mean?"),
+                     br(),
+                     br(),
+                     
+                     HTML("<p> <b>The Alaska DHSS standard for determining Alert level uses 
                                  in-state resident cases with the 14 day window.</b>
                                  To learn more about Alaska COVID-19 Alert Levels please visit:
                                  <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
                      )
-                     ))
+                 ))
+        
+ 
     )
 )
 

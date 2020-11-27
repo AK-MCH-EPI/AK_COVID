@@ -7,7 +7,7 @@ cnty_av_rates <- function(dataset){
   ar_data <- merge(dat1_res, b_c_crosswalk[,c(2,7)],by.x = "County_Code", by.y = "County_Code", all.x = T)
   ar_data <- ar_data %>% filter(BHR_Name != "Unknown")
   
-   icr1 <- incidence(as.Date(ar_data$OnsetDate), last_date = max(ar_data$OnsetDate), groups = ar_data$County_Name)
+   icr1 <- incidence(as.Date(ar_data$ReportDate), last_date = max(ar_data$ReportDate), groups = ar_data$County_Name)
    icr2 <- as.data.frame (icr1)
    icr3 <- pivot_longer(icr2, -dates, names_to = "Region", values_to = "Cases")
   
