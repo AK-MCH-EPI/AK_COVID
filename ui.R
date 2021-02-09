@@ -37,7 +37,7 @@ ui <- fluidPage(
                  br(),
                  sliderInput("inSlide", "Number of prior months to display:",
                              min = 1, max = mnths_dsp,
-                             value = 3
+                             value = 5
                  ),
                  checkboxInput("cumcntCheckbox",
                                "Change to cumulative daily case count",
@@ -107,7 +107,7 @@ ui <- fluidPage(
                      helpText(HTML('<p> <i>Resident cases occurring outside Alaska excluded.</i> </p>')),
                      sliderInput("inSlide1", "Number of prior months to display:",
                                  min = 1, max = mnths_dsp,
-                                 value = 3
+                                 value = 5
                      ),
                      actionButton("Rt_explain", "Click to learn about Rt"),
                      br(),
@@ -132,17 +132,7 @@ ui <- fluidPage(
                                   plotlyOutput("r.plot"),
                                   br(),
                                   h4("Current Estimates"),
-                                  htmlOutput("r.table"),
-                                  br(),
-                                  br(),
-                                  
-                                  HTML("<p> Various methods are used to estimate the effective
-                                  reproductive number which makes it difficult to compare our 
-                                  calculated values with other jurisdictions. Rt.live however, 
-                                  applies one standard methodology to all states to enable comparison. 
-                                  To see how Alaska compares with other states please visit:
-                                 <a href='https://rt.live/'>https://rt.live/</a>.</p>"
-                                  )
+                                  htmlOutput("r.table")
                          ),
                          tabPanel("Methods",
                                   includeMarkdown("methodsEffectiveR.Rmd")
