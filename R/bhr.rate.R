@@ -21,14 +21,14 @@ d2$roll_mean[is.na(d2$roll_mean)] <- 0
 #population totals for rates
 # popBHR <- b_c_crosswalk %>%
 #   group_by(BHR_Name) %>%
-#   summarise(count = last(bhr_pop_2019))
+#   summarise(count = last(bhr_pop))
 
-b_c_crosswalk$tot <- b_c_crosswalk$county_pop_2019 + b_c_crosswalk$influx_pop
+b_c_crosswalk$tot <- b_c_crosswalk$county_pop + b_c_crosswalk$influx_pop
 
 if(res == T){
   popBHR <- b_c_crosswalk %>%
     group_by(BHR_Name) %>%
-    summarise(count = last(bhr_pop_2019))
+    summarise(count = last(bhr_pop))
 }else{
   popBHR <- b_c_crosswalk %>%
     group_by(BHR_Name) %>%

@@ -5,8 +5,9 @@ account: ak-mch-epi
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2645486
-bundleId: 3488347
+bundleId: 3907758
 url: https://ak-mch-epi.shinyapps.io/AKCOVID_test/
-when: 1596828006.84011
+when: 1606369879.14476
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: .RData|ChangeLog|README.md|R/setdata.R

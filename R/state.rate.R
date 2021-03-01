@@ -13,9 +13,9 @@ i2 <- as.data.frame (io_1j)
 b_c_crosswalk <- b_c_crosswalk %>% filter(BHR_Name != "Unknown")
 
 if(res == T){
-sumpop <- sum(b_c_crosswalk$county_pop_2019, na.rm = TRUE)
+sumpop <- sum(b_c_crosswalk$county_pop, na.rm = TRUE)
 }else{
-sumpop <- (sum(b_c_crosswalk$county_pop_2019, na.rm = TRUE)) + (sum(b_c_crosswalk$influx_pop, na.rm = TRUE))
+sumpop <- (sum(b_c_crosswalk$county_pop, na.rm = TRUE)) + (sum(b_c_crosswalk$influx_pop, na.rm = TRUE))
 }
 
 #average daily counts 7 day average

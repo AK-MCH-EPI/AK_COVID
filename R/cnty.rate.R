@@ -21,14 +21,14 @@ cnty_av_rates <- function(dataset){
    #population totals for rates
    popCensus <- b_c_crosswalk %>%
      group_by(County_Name) %>%
-     summarise(count = sum(county_pop_2019))
+     summarise(count = sum(county_pop))
    
-   b_c_crosswalk$tot <- b_c_crosswalk$county_pop_2019 + b_c_crosswalk$influx_pop
+   b_c_crosswalk$tot <- b_c_crosswalk$county_pop + b_c_crosswalk$influx_pop
    
    if(res == T){
      popBHR <- b_c_crosswalk %>%
        group_by(County_Name) %>%
-       summarise(count = last(bhr_pop_2019))
+       summarise(count = last(bhr_pop))
    }else{
      popBHR <- b_c_crosswalk %>%
        group_by(County_Name) %>%
