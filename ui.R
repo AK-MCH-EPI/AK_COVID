@@ -42,9 +42,11 @@ ui <- fluidPage(
                  checkboxInput("cumcntCheckbox",
                                "Change to cumulative daily case count",
                                FALSE), 
-                  helpText(HTML('<p><b>Note:</b>
-                            Model updated 11/24/2020 to adjust for reporting delay and changes
-                            in base tables. See the Methods tab for more details.</p>')),
+                  helpText(HTML('<p><b>Notice:</b>
+                                 If you’re having trouble viewing the bar chart when you expand 
+                                 the number of months this is due to your screen size or screen 
+                                 resolution. You can view the chart by zooming out on your browser.
+                                </p>')),
                    width=3),
         mainPanel(
             tabsetPanel(
