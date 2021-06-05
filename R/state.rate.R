@@ -5,7 +5,7 @@ statewide_av_rates <- function(dataset, res = T){
 dat1_res <- dataset
   
 #Create incidence object  
-io_1j <- incidence(dat1_res$ReportDate, last_date = max_date)
+io_1j <- incidence(dat1_res$Report_Date, last_date = max_date)
 i2 <- as.data.frame (io_1j)
 
 #Denominator
@@ -21,7 +21,7 @@ sumpop <- (sum(b_c_crosswalk$county_pop, na.rm = TRUE)) + (sum(b_c_crosswalk$inf
 #average daily counts 7 day average
 i3 <- i2 %>%
   arrange(dates) %>%
-  mutate(daily_average = rollmean(counts, 7, na.pad = T, align = "right"),
+  mutate(daily_average = rollmean(counts, 7, fill = NA, align = "right"),
          window = "7 day window")
 i3$daily_average[is.na(i3$daily_average)] <- 0
 #calculate rates and CI
@@ -40,7 +40,7 @@ i4$lowerCI <- round(((pois.daly(i4$daily_average, sumpop)$lower)*100000),2)
 i4$upperCI <- round(((pois.daly(i4$daily_average, sumpop)$upper)*100000),2)  
 #combine data
 i5 <- rbind(i3,i4)
-#crate filter
+#create filter
 i6 <- data.frame(i5, Area = "Statewide",
                  Region = "Statewide", population = sumpop)
 i6 <- i6[,c(1,3:10)]

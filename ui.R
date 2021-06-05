@@ -142,8 +142,8 @@ ui <- fluidPage(
         
         tabPanel("Average Daily Rate",
                  sidebarPanel(
-                     # radioButtons("geo", "Select Area:",
-                     #              c("Statewide","Behavioral Health Region","County")), 
+                     #radioButtons("geo", "Select Area:",
+                     #              c("Statewide","Behavioral Health Region","Borough")), 
                      radioButtons("geo", "Select Area:",
                                   c("Statewide","Behavioral Health Region")),
                      #uiOutput("factor_dropdown"),

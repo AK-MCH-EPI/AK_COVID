@@ -64,7 +64,8 @@ batch <<- list()
 ctpt1 <<- 0
 status <<- TRUE
 
-url_t <<- "https://services1.arcgis.com/WzFsmainVTuD5KML/arcgis/rest/services/Report_Date/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson&resultOffset="
+#url_t <<- "https://services1.arcgis.com/WzFsmainVTuD5KML/arcgis/rest/services/Report_Date/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson&resultOffset="
+url_t <<- "https://services1.arcgis.com/WzFsmainVTuD5KML/arcgis/rest/services/Cases_Data_B__Cases_Dataset/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson&resultOffset="
 
 while(status == TRUE) {
    if(ctpt1 == 0){
@@ -107,10 +108,10 @@ dat1 <<- setdata_1(dat)
 # dat1 <- dat
 
 ### Set date range
-dt <- as.Date(as.Date(min(dat1$ReportDate)):as.Date(max(dat1$ReportDate)),origin = "1970-01-01")
+dt <- as.Date(as.Date(min(dat1$Report_Date)):as.Date(max(dat1$Report_Date)),origin = "1970-01-01")
 
 ### Set Max date 
-max_date <-  max(dat1$ReportDate)
+max_date <-  max(dat1$Report_Date)
 
 ### Set number of months of outbrek
 mnths_dsp <- interval((min(dt)), (max_date+10)) %/% months(1)
@@ -119,7 +120,7 @@ mnths_dsp <- interval((min(dt)), (max_date+10)) %/% months(1)
 #### elements ####
 
 # factor drop for BHR #
-BHR_list <- as.list(names(table(dat1$BHR_Name)))
+BHR_list <- as.list(names(table(dat1$BHR)))
 BHR_list <- BHR_list[-11]
 
 # factor drop for County #
@@ -134,8 +135,8 @@ BHR_list <- BHR_list[-11]
 # 
 # #base datasets to work with
 # 
- dat1_res <- dat1 %>% filter(Resident == "Y", Occurrence == "Y")
- dat1_resnon <- dat1 %>% filter(Occurrence == "Y")
+ dat1_res <- dat1 %>% filter(Resident__Y_N_ == "Y", Occurrence__Y_N_ == "Y")
+ dat1_resnon <- dat1 %>% filter(Occurrence__Y_N_ == "Y")
 # 
 # ### Organize statewide estimates 
 # 
@@ -147,8 +148,8 @@ BHR_list <- BHR_list[-11]
  BHR_RN <- bhr_av_rates(dat1_resnon,res=F)
 # 
 # # #### Organize Census data ####
- # CNTY_R <- cnty_av_rates(dat1_res,res=T)
- # CNTY_RN <- cnty_av_rates(dat1_resnon,res=F)
+# CNTY_R <- cnty_av_rates(dat1_res,res=T)
+# CNTY_RN <- cnty_av_rates(dat1_resnon,res=F)
 # 
 # #### Bind data together ####
 # ## avr_data <- rbind(statewide_R, BHR_R, CNTY_R)

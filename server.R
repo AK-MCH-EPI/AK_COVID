@@ -6,25 +6,25 @@ server <- function(input,output,session){
 
 source("global.R")
   
-### Epi data - projections
+### Epi data - projections ####
   
     global_epi_data <- reactive({
         
         if(input$inSelectReg == "Statewide") {
             dat1 <- dat1
         } else {
-            dat1 <- dat1 %>% filter(BHR_Name == input$inSelectReg)
+            dat1 <- dat1 %>% filter(BHR == input$inSelectReg)
         }
         
         
         if(input$inSelectRes == "Resident" & input$inCheckbox == FALSE) {
-            e_dat1 <- dat1 %>% filter(Resident == "Y" & Occurrence == "Y")
+            e_dat1 <- dat1 %>% filter(Resident__Y_N_ == "Y" & Occurrence__Y_N_ == "Y")
         }
         if(input$inSelectRes == "Resident & non-Resident" & input$inCheckbox == FALSE) {
-            e_dat1 <- dat1 %>% filter(Occurrence == "Y")
+            e_dat1 <- dat1 %>% filter(Occurrence__Y_N_ == "Y")
         }
         if(input$inSelectRes == "Resident" & input$inCheckbox == TRUE) {
-            e_dat1 <- dat1 %>% filter(Resident == "Y")
+            e_dat1 <- dat1 %>% filter(Resident__Y_N_ == "Y")
         }
         if(input$inSelectRes == "Resident & non-Resident" & input$inCheckbox == TRUE) {
             e_dat1 <- dat1
@@ -35,7 +35,7 @@ source("global.R")
         locate <- input$inSelectReg
         c_ex <- nrow(dat1) - nrow(e_dat1)
         
-        io_1 <- incidence(dat1$OnsetDate_imp, last_date = max(dat1$ReportDate))
+        io_1 <- incidence(dat1$OnsetDate_imp, last_date = max(dat1$Report_Date))
         io_1d <- as.data.frame(io_1)
         
         io_2 <- subset(io_1, to = max(io_1$dates-9))
@@ -338,14 +338,14 @@ source("global.R")
     })
 
 
-    ### R Effective 
+### R Effective ####
     
     r_data <- reactive({
       
       if(input$inSelectReg1 == "Statewide") {
-        dat1 <- subset(dat1, Occurrence == "Y")
+        dat1 <- subset(dat1, Occurrence__Y_N_ == "Y")
       } else {
-        dat1 <- dat1 %>% filter(BHR_Name == input$inSelectReg1 & Occurrence == "Y")
+        dat1 <- dat1 %>% filter(BHR == input$inSelectReg1 & Occurrence__Y_N_ == "Y")
       }
       
       locate <- input$inSelectReg1
@@ -353,12 +353,12 @@ source("global.R")
       if(input$inRes_select == "Resident & non-Resident"){
         dat1s <- dat1
       } else {
-        dat1s <- dat1 %>% filter(Resident == "Y")
+        dat1s <- dat1 %>% filter(Resident__Y_N_ == "Y")
       }
       
       
       # incidence objects
-      io_1a <- incidence(dat1$OnsetDate_imp, last_date = max(dat1$ReportDate))
+      io_1a <- incidence(dat1$OnsetDate_imp, last_date = max(dat1$Report_Date))
       ############
       
       #subset and create incidence object on the 30 days before truncation.
@@ -504,9 +504,8 @@ source("global.R")
       )
     })   
    
-    ### Average Daily Rate     
+### Average Daily Rate ####    
     rate_data <- reactive({
-      
       
       if(input$inSelectRes_rate == "Resident"){  
         
@@ -536,10 +535,10 @@ source("global.R")
         temp1a <- temp1 %>% filter(window %in% c(input$wind))
         
       }
-      # if (input$geo == "County") {
-      #   temp1 <- rsrt.dat %>% filter(Area == c(input$geo))
-      #   temp1a <- temp1 %>% filter(window %in% c(input$wind))  
-      # }
+       # if (input$geo == "Borough") {
+       #   temp1 <- rsrt.dat %>% filter(Area == c(input$geo))
+       #   temp1a <- temp1 %>% filter(window %in% c(input$wind))  
+       # }
       
       
       temp2a <- temp1a %>% filter(window == input$wind, Region == input$rgn)

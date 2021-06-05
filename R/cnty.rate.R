@@ -1,13 +1,13 @@
 ### Organize census area county (cnty) data for rates
 
-cnty_av_rates <- function(dataset){
+cnty_av_rates <- function(dataset, res = T){
   
   dat1_res <- dataset
   
-  ar_data <- merge(dat1_res, b_c_crosswalk[,c(2,7)],by.x = "County_Code", by.y = "County_Code", all.x = T)
-  ar_data <- ar_data %>% filter(BHR_Name != "Unknown")
+  ar_data <- merge(dat1_res, b_c_crosswalk[,c(2,7)],by.x = "Borough_Code", by.y = "County_Code", all.x = T)
+  ar_data <- ar_data %>% filter(Borough != "Unknown")
   
-   icr1 <- incidence(as.Date(ar_data$ReportDate), last_date = max(ar_data$ReportDate), groups = ar_data$County_Name)
+   icr1 <- incidence(as.Date(ar_data$Report_Date), last_date = max(ar_data$Report_Date), groups = ar_data$Borough)
    icr2 <- as.data.frame (icr1)
    icr3 <- pivot_longer(icr2, -dates, names_to = "Region", values_to = "Cases")
   
@@ -28,7 +28,7 @@ cnty_av_rates <- function(dataset){
    if(res == T){
      popBHR <- b_c_crosswalk %>%
        group_by(County_Name) %>%
-       summarise(count = last(bhr_pop))
+       summarise(count = last(county_pop))
    }else{
      popBHR <- b_c_crosswalk %>%
        group_by(County_Name) %>%
@@ -65,9 +65,9 @@ cnty_av_rates <- function(dataset){
   
    c8 <- rbind(c4,c7)
   
-   county <- data.frame(dates = c8$dates, daily_average = c8$roll_mean, window = c8$window,
+   Borough <- data.frame(dates = c8$dates, daily_average = c8$roll_mean, window = c8$window,
                         rate = c8$rate, lowerCI = c8$lowerCI, upperCI = c8$upperCI,
                         Area = "County", Region = c8$Region, population = c8$count)
-  
+  return(Borough)
 
 }
