@@ -135,8 +135,12 @@ BHR_list <- BHR_list[-11]
 # 
 # #base datasets to work with
 # 
- dat1_res <- dat1 %>% filter(Resident__Y_N_ == "Y", Occurrence__Y_N_ == "Y")
- dat1_resnon <- dat1 %>% filter(Occurrence__Y_N_ == "Y")
+#
+# dat1_res <- dat1 %>% filter(Resident__Y_N_ == "Y", Occurrence__Y_N_ == "Y")
+# dat1_resnon <- dat1 %>% filter(Occurrence__Y_N_ == "Y")
+   # changed 7/14/2021 - data HUB does not exclude OOS
+ dat1_res <- dat1 %>% filter(Resident__Y_N_ == "Y")
+ dat1_resnon <- dat1 
 # 
 # ### Organize statewide estimates 
 # 

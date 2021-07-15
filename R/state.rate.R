@@ -25,9 +25,9 @@ i3 <- i2 %>%
          window = "7 day window")
 i3$daily_average[is.na(i3$daily_average)] <- 0
 #calculate rates and CI
-i3$rate <- round(((pois.daly(i3$daily_average, sumpop)$rate)*100000),2)
-i3$lowerCI <- round(((pois.daly(i3$daily_average, sumpop)$lower)*100000),2)
-i3$upperCI <- round(((pois.daly(i3$daily_average, sumpop)$upper)*100000),2)
+i3$rate <- round(((pois.daly(i3$daily_average, sumpop)$rate)*100000),1)
+i3$lowerCI <- round(((pois.daly(i3$daily_average, sumpop)$lower)*100000),1)
+i3$upperCI <- round(((pois.daly(i3$daily_average, sumpop)$upper)*100000),1)
 #average daily counts 14 day average
 i4 <- i2 %>%
   arrange(dates) %>%
@@ -35,11 +35,12 @@ i4 <- i2 %>%
          window = "14 day window")
 i4$daily_average[is.na(i4$daily_average)] <- 0
 #calculate rates and CI
-i4$rate <- round(((pois.daly(i4$daily_average, sumpop)$rate)*100000),2)
-i4$lowerCI <- round(((pois.daly(i4$daily_average, sumpop)$lower)*100000),2)
-i4$upperCI <- round(((pois.daly(i4$daily_average, sumpop)$upper)*100000),2)  
+i4$rate <- round(((pois.daly(i4$daily_average, sumpop)$rate)*100000),1)
+i4$lowerCI <- round(((pois.daly(i4$daily_average, sumpop)$lower)*100000),1)
+i4$upperCI <- round(((pois.daly(i4$daily_average, sumpop)$upper)*100000),1)  
 #combine data
 i5 <- rbind(i3,i4)
+
 #create filter
 i6 <- data.frame(i5, Area = "Statewide",
                  Region = "Statewide", population = sumpop)

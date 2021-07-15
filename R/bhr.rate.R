@@ -40,9 +40,9 @@ d3 <- merge(d2,popBHR, by.x = "Region", by.y = "BHR_Name", all.x = T)
 d4 <- d3 %>%
   arrange(Region,dates)
 
-d4$rate <- round(((pois.daly(d4$roll_mean, d4$count)$rate)*100000),2)
-d4$lowerCI <- round(((pois.daly(d4$roll_mean, d4$count)$lower)*100000),2)
-d4$upperCI <- round(((pois.daly(d4$roll_mean, d4$count)$upper)*100000),2)
+d4$rate <- round(((pois.daly(d4$roll_mean, d4$count)$rate)*100000),1)
+d4$lowerCI <- round(((pois.daly(d4$roll_mean, d4$count)$lower)*100000),1)
+d4$upperCI <- round(((pois.daly(d4$roll_mean, d4$count)$upper)*100000),1)
 
 #14 day window
 d5 <- ibr3 %>%
@@ -57,12 +57,13 @@ d6 <- merge(d5,popBHR, by.x = "Region", by.y = "BHR_Name", all.x = T)
 d7 <- d6 %>%
   arrange(Region,dates)
 
-d7$rate <- round(((pois.daly(d7$roll_mean, d7$count)$rate)*100000),2)
-d7$lowerCI <- round(((pois.daly(d7$roll_mean, d7$count)$lower)*100000),2)
-d7$upperCI <- round(((pois.daly(d7$roll_mean, d7$count)$upper)*100000),2)
+d7$rate <- round(((pois.daly(d7$roll_mean, d7$count)$rate)*100000),1)
+d7$lowerCI <- round(((pois.daly(d7$roll_mean, d7$count)$lower)*100000),1)
+d7$upperCI <- round(((pois.daly(d7$roll_mean, d7$count)$upper)*100000),1)
 
 
 d8 <- rbind(d4,d7)
+
 
 BHR <- data.frame(dates = d8$dates, daily_average = d8$roll_mean, window = d8$window,
                   rate = d8$rate, lowerCI = d8$lowerCI, upperCI = d8$upperCI,

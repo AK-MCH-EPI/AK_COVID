@@ -568,7 +568,6 @@ source("global.R")
 
     output$rate.plot <- renderPlotly({
       
-      
       a <- ggplot() +
         geom_rect(data = rate_data()$alert_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
                                                    fill = Alert_Level,
