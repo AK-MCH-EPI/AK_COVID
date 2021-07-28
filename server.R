@@ -35,7 +35,7 @@ source("global.R")
         locate <- input$inSelectReg
         c_ex <- nrow(dat1) - nrow(e_dat1)
         
-        io_1 <- incidence(dat1$OnsetDate_imp, last_date = max(dat1$Report_Date))
+        io_1 <- incidence(e_dat1$OnsetDate_imp, last_date = max(e_dat1$Report_Date))
         io_1d <- as.data.frame(io_1)
         
         io_2 <- subset(io_1, to = max(io_1$dates-9))
@@ -358,7 +358,7 @@ source("global.R")
       
       
       # incidence objects
-      io_1a <- incidence(dat1$OnsetDate_imp, last_date = max(dat1$Report_Date))
+      io_1a <- incidence(dat1s$OnsetDate_imp, last_date = max(dat1s$Report_Date))
       ############
       
       #subset and create incidence object on the 30 days before truncation.
