@@ -5,7 +5,7 @@ statewide_av_rates <- function(dataset, res = T){
 dat1_res <- dataset
   
 #Create incidence object  
-io_1j <- incidence(dat1_res$Report_Date, last_date = max_date)
+io_1j <- incidence(dat1_res$report_date, last_date = max_date)
 i2 <- as.data.frame (io_1j)
 
 #Denominator

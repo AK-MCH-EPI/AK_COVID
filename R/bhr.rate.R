@@ -4,10 +4,10 @@ bhr_av_rates <- function(dataset, res = T){
   
   dat1_res <- dataset
   
-ar_data <- merge(dat1_res, b_c_crosswalk[,c(2,7)],by.x = "Borough_Code", by.y = "County_Code", all.x = T)
-ar_data <- ar_data %>% filter(BHR != "Unknown") # sometimes coding errors are missed
+ar_data <- merge(dat1_res, b_c_crosswalk[,c(2,7)],by.x = "borough_code", by.y = "County_Code", all.x = T)
+ar_data <- ar_data %>% filter(bhr != "Unknown") # sometimes coding errors are missed
 
-ibr1 <- incidence(as.Date(ar_data$Report_Date), last_date = max(ar_data$Report_Date), groups = ar_data$BHR)
+ibr1 <- incidence(as.Date(ar_data$report_date), last_date = max(ar_data$report_date), groups = ar_data$bhr)
 ibr2 <- as.data.frame (ibr1)
 ibr3 <- pivot_longer(ibr2, -dates, names_to = "Region", values_to = "Cases")
 

@@ -42,11 +42,11 @@ ui <- fluidPage(
                  checkboxInput("cumcntCheckbox",
                                "Change to cumulative daily case count",
                                FALSE), 
-                  helpText(HTML('<p><b>Notice:</b>
-                                 If you’re having trouble viewing the bar chart when you expand 
-                                 the number of months this is due to your screen size or screen 
-                                 resolution. You can view the chart by zooming out on your browser.
-                                </p>')),
+                  # helpText(HTML('<p><b>Notice:</b>
+                  #                If you’re having trouble viewing the bar chart when you expand 
+                  #                the number of months this is due to your screen size or screen 
+                  #                resolution. You can view the chart by zooming out on your browser.
+                  #               </p>')),
                    width=3),
         mainPanel(
             tabsetPanel(
@@ -140,7 +140,50 @@ ui <- fluidPage(
                                   includeMarkdown("methodsEffectiveR.Rmd")
                          )))),
         
-        tabPanel("Average Daily Rate",
+        tabPanel("7-Day Alert Level Trend",
+                 sidebarPanel(
+                     radioButtons("geo2", "Select Area:",
+                                  c("Statewide","Borough")),
+                     selectInput("rgn2", "Select Region:",
+                                 choices = "", selected = ""),
+                     helpText(HTML('<p><b>CAUTION:</b>
+                                   Areas with a few number of cases have extreme
+                                   variability resulting in unstable rates over time as represented 
+                                   by the large confidence bands. In small areas a few cases can
+                                   result in large changes.</p>')),
+                     actionButton("RateC_explain2", "Learn about this measure"),
+                     br(),
+                     br(),
+                     downloadButton("downloadRateData2", "Download Data"),
+                     br(),
+                     br(),
+                     helpText(HTML('<p><b>Note:</b>
+                        This alert level calculation is based on the per capita incidence in the past 7 days among 
+			               Alaska RESIDENTS ONLY using date of report.
+                        </p>')),
+                     width = 3),
+                 
+                 mainPanel(
+                     tags$style(type="text/css",
+                                ".shiny-output-error { visibility: hidden; }",
+                                ".shiny-output-error:before { visibility: hidden; }"
+                     ),
+                     br(),
+                     plotlyOutput("rate.plot2"),
+                     br(),
+                     valueBoxOutput("AlertLevel.box2", width = 20),
+                     
+                     actionButton("Alert_explain2", "What does this mean?"),
+                     br(),
+                     br(),
+                     
+                     HTML("<p> <b>The Alaska DHSS Alert levels are consistent with those developed by the Centers for
+				                  Disease Control and Prevention.</b>
+                                  To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
+                                 <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
+                     )
+                 )),
+        tabPanel("Average Daily Rate (Old Alert)",
                  sidebarPanel(
                      #radioButtons("geo", "Select Area:",
                      #              c("Statewide","Behavioral Health Region","Borough")), 
@@ -187,9 +230,9 @@ ui <- fluidPage(
                      br(),
                      br(),
                      
-                     HTML("<p> <b>The Alaska DHSS standard for determining Alert level uses 
+                     HTML("<p> <b>This historical (depreciated) Alaska DHSS standard for determining Alert level used 
                                  in-state resident cases with the 14 day window.</b>
-                                 To learn more about Alaska COVID-19 Alert Levels please visit:
+                                 To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
                                  <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
                      )
                  ))

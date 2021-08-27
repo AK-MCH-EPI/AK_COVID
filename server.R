@@ -13,18 +13,18 @@ source("global.R")
         if(input$inSelectReg == "Statewide") {
             dat1 <- dat1
         } else {
-            dat1 <- dat1 %>% filter(BHR == input$inSelectReg)
+            dat1 <- dat1 %>% filter(bhr == input$inSelectReg)
         }
         
         
         if(input$inSelectRes == "Resident" & input$inCheckbox == FALSE) {
-            e_dat1 <- dat1 %>% filter(Resident__Y_N_ == "Y" & Occurrence__Y_N_ == "Y")
+            e_dat1 <- dat1 %>% filter(resident_y_n == "Y" & occurrence_y_n == "Y")
         }
         if(input$inSelectRes == "Resident & non-Resident" & input$inCheckbox == FALSE) {
-            e_dat1 <- dat1 %>% filter(Occurrence__Y_N_ == "Y")
+            e_dat1 <- dat1 %>% filter(occurrence_y_n == "Y")
         }
         if(input$inSelectRes == "Resident" & input$inCheckbox == TRUE) {
-            e_dat1 <- dat1 %>% filter(Resident__Y_N_ == "Y")
+            e_dat1 <- dat1 %>% filter(resident_y_n == "Y")
         }
         if(input$inSelectRes == "Resident & non-Resident" & input$inCheckbox == TRUE) {
             e_dat1 <- dat1
@@ -35,7 +35,7 @@ source("global.R")
         locate <- input$inSelectReg
         c_ex <- nrow(dat1) - nrow(e_dat1)
         
-        io_1 <- incidence(e_dat1$OnsetDate_imp, last_date = max(e_dat1$Report_Date))
+        io_1 <- incidence(e_dat1$OnsetDate_imp, last_date = max(e_dat1$report_date))
         io_1d <- as.data.frame(io_1)
         
         io_2 <- subset(io_1, to = max(io_1$dates-9))
@@ -125,12 +125,12 @@ source("global.R")
         p1<-ggplot() +
             geom_bar(data = io_2d, aes(x = dates, y = counts,
                                          text = paste("Date:",dates,"<br>Imputed count:",counts))
-                     , stat = "identity",fill = "#ffb923", color = "white", width = 1) +
+                     , stat = "identity",fill = "#ffb923") +
             geom_bar(data = subset(dta, dates <= min(dates)+8),
                      aes(x = dates, y = Mean,
                                      text = paste("Date:",dates,"<br>Adjusted count:",Mean,
                                            "<br>LowerCI:",round(lower,2),"<br>UpperCI:",round(upper,2))), 
-                     stat = "identity",fill = "gray70", color = "white", width = 1) +
+                     stat = "identity",fill = "gray70") +
 
             geom_line(data = projs,
                       aes(x=date,y=fit,group=1,
@@ -138,25 +138,25 @@ source("global.R")
                                      "<br>LowerCI:",round(lwr,2),"<br>UpperCI:",round(upr,2))), 
                    linetype="dashed", size = 1, color = "#0a306a") +
 
-          
             geom_ribbon(data = projs, 
                       aes(x = date, ymin = lwr,ymax = upr),
                       fill = "blue",alpha = 0.20)+
           
             coord_cartesian(ylim = c(0, max(io_1d$counts)*1.7),
                             xlim = c(((max_date) %m-% months(input$inSlide)),(max_date+10))) +
-            scale_x_date(breaks = pretty(io_1d$date, n = 10),date_labels = "%d %b") +
+            scale_x_date(date_breaks = "1 month",date_labels = "%b %Y") +
             theme_minimal() +
             #theme(plot.caption = element_text(hjust = 0)) +
-            labs(title=paste("Short term forecast,", global_epi_data()$c_ex),
+            labs(title=paste("Short term COVID-19 forecast,", global_epi_data()$c_ex),
                  subtitle = "(log-linear model: short term forecast with 95% confidence band)",
                  caption = "*Indicated by gray bars: Illnesses that began during this period may not yet be reported resulting in incomplete data and excluded from model fit.") +
             theme(legend.justification = c(0, 1), 
                   legend.position = c(0, 0.95),
-                  axis.title.x=element_blank()) 
+                  axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = 30,hjust = 1)) 
         
         ggplotly(p1, tooltip = c("text")) %>%
-            layout (title = list(text = paste0('Estimated Epidemic Curve,',' ', global_epi_data()$locate,
+            layout (title = list(text = paste0('Estimated COVID-19 Epidemic Curve,',' ', global_epi_data()$locate,
                                                '<br>',
                                                '<sup>',
                                                'Gray bars: preliminary adjusted counts estimated from incomplete data due to reporting lag', 
@@ -267,7 +267,7 @@ source("global.R")
                                                "<br>LowerCI:",round(lwr,2),"<br>UpperCI:",round(upr,2))), 
                               projs,linetype="dashed", size = 0.5, color = "red") +
                     theme_minimal() +
-                    labs(title = "Cumulative daily incidence by onset date, Alaska",
+                    labs(title = "COVID-19 Cumulative daily incidence by onset date, Alaska",
                          subtitle = "(log-linear model: short term forecast with 95% confidence band)",
                          caption = "*Indicated by gray dots: Illnesses that began during this period may not yet be reported resulting in incomplete data and excluded from model fit.") +
                     theme(legend.justification = c(0, 1), 
@@ -278,7 +278,7 @@ source("global.R")
                 ### plotly version
                 
                 ggplotly(t1, tooltip = c("text")) %>%
-                    layout(title = list(text = paste0('Cumulative Epidemic Curve,',' ', global_epi_data()$locate,
+                    layout(title = list(text = paste0('COVID-19 Cumulative Epidemic Curve,',' ', global_epi_data()$locate,
                                                       '<br>',
                                                       '<sup>',
                                                       'Gray bars: preliminary adjusted counts estimated from incomplete data due to reporting lag', 
@@ -343,9 +343,9 @@ source("global.R")
     r_data <- reactive({
       
       if(input$inSelectReg1 == "Statewide") {
-        dat1 <- subset(dat1, Occurrence__Y_N_ == "Y")
+        dat1 <- subset(dat1, occurrence_y_n == "Y")
       } else {
-        dat1 <- dat1 %>% filter(BHR == input$inSelectReg1 & Occurrence__Y_N_ == "Y")
+        dat1 <- dat1 %>% filter(bhr == input$inSelectReg1 & occurrence_y_n == "Y")
       }
       
       locate <- input$inSelectReg1
@@ -353,12 +353,12 @@ source("global.R")
       if(input$inRes_select == "Resident & non-Resident"){
         dat1s <- dat1
       } else {
-        dat1s <- dat1 %>% filter(Resident__Y_N_ == "Y")
+        dat1s <- dat1 %>% filter(resident_y_n == "Y")
       }
       
       
       # incidence objects
-      io_1a <- incidence(dat1s$OnsetDate_imp, last_date = max(dat1s$Report_Date))
+      io_1a <- incidence(dat1s$OnsetDate_imp, last_date = max(dat1s$report_date))
       ############
       
       #subset and create incidence object on the 30 days before truncation.
@@ -377,7 +377,7 @@ source("global.R")
       
       projs <- data.frame(y, date = as.Date(dtp, origin = "1970-01-01"))
       
-      ## Create dataset with fitted values substituded for the past 7-days.
+      ## Create dataset with fitted values substituded for the past 9-days.
       io_1b <- incidence(dat1s$OnsetDate_imp, last_date = max_date-9)
       dts <- c(io_1b$dates, projs$date)
       cnts <- c(io_1b$counts, projs$fit)
@@ -452,9 +452,10 @@ source("global.R")
         ylab("Rt")+
         xlab(" ")+
         theme_minimal()+
-        labs(title= paste("Time-varying reproductive number (Rt),",r_data()$locate))  +
-        scale_x_date(breaks = pretty( dx3$date, n = 10),date_labels = "%d %b") +
-        coord_cartesian(ylim = c(0, 3)) 
+        labs(title= paste("COVID-19 Time-varying reproductive number (Rt),",r_data()$locate))  +
+        scale_x_date(date_breaks = "1 month",date_labels = "%b %Y") +
+        coord_cartesian(ylim = c(0, 3)) +
+        theme(axis.text.x = element_text(angle = 30, hjust = 1))
       
       ggplotly(a, tooltip = c("text"))
       
@@ -504,10 +505,177 @@ source("global.R")
       )
     })   
    
+### 7-Day rate Alert level ####
+    observe({
+      if(input$geo2 == "Statewide") {
+        updateSelectInput(session, "rgn2", "Select Region:",
+                          choices = "Statewide") 
+      } else {
+      Factors =  c("None Selected",cnty_list)
+      updateSelectInput(session, "rgn2", "Select Region:",
+                        choices = c(Factors))
+      }
+    })     
+    
+  svn_day_data <- reactive({
+      
+      if(input$geo2 == "Statewide") { 
+        
+        temp2a <- statewide_7d_rate(dat1)
+        vlu <- as.name(input$geo2)
+        
+      } else {
+        
+        if(input$rgn2 == "None Selected"){
+          temp2a <- (NULL)
+          
+        } else {
+
+        tmp_dat <- b_c_crosswalk %>% filter(County_Name %in% c(input$rgn2))  
+        tdat1 <- dat1 %>% filter(borough_code %in% c(tmp_dat$County_Code)) 
+        temp2a <- borough_7d_rate(tdat1)
+        
+        vlu <- as.name(input$rgn2)
+        }
+      }
+    
+      list(temp2a = temp2a, vlu = vlu)
+    
+      }) 
+    
+  output$rate.plot2 <- renderPlotly({
+      
+      temp2a <- svn_day_data()$temp2a
+      
+      alert_df <- data.frame(xmin = min(temp2a$dates),
+                             xmax = max(temp2a$dates),
+                             ymin = c(0,10,50,100),
+                             ymax = c(9.99,49.99,99.99,max(temp2a$upperCI)+5),
+                             Alert_Level = as.factor(c("Low","Moderate","Substantial","High")))
+      alert_df$Alert_Level <- factor(alert_df$Alert_Level, levels = c("High","Substantial","Moderate","Low"))
+      
+      a <- ggplot() +
+        geom_rect(data = alert_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
+                                       fill = Alert_Level,
+                                       text = paste("Alert Level:",Alert_Level)))+
+        scale_fill_manual(values = c("#ff0707","#ff753a","#fff715","#238dff")) +
+        geom_ribbon(data = temp2a, aes(x = dates, ymin = lowerCI, ymax = upperCI),
+                    alpha = 0.20, fill = "black") +
+        geom_line(data = temp2a, aes(x = dates, y = rate, group = 1,
+                                     text = paste("Date:",dates,"<br>Rate:",rate,
+                                                  "<br>LowerCI:",lowerCI,
+                                                  "<br>UpperCI:",upperCI)),
+                  colour = "black") +
+        ylab("rate per 100k residents")+
+        xlab("")+
+        #ylim(0,max(temp2a$rate)+10)+
+        coord_cartesian(ylim = c(0, max(temp2a$upperCI)+5)) +
+        scale_x_date(date_breaks = "1 month", date_labels = "%b %Y",
+                     limits = c(min(temp2a$dates), max(temp2a$dates))) +
+        labs(title = paste0("7-Day COVID-19 case rate - ",svn_day_data()$vlu)) +
+        theme_minimal()+
+        theme(axis.text.x = element_text(angle = 30,hjust = 1)) 
+
+
+      ggplotly(a, tooltip = c("text"))
+      
+  })
+  
+  output$downloadRateData2 <- downloadHandler(
+    
+    filename = function() {
+      
+      if(input$rgn2 == "None Selected") {
+        NULL
+      } else {
+        paste(input$rgn2, ".csv", sep = "")
+      }
+    },
+    content = function(file) {
+      if(input$rgn2 == "None Selected") {
+        NULL
+      } else {
+        write.csv(svn_day_data()$temp2a, file, row.names = FALSE)
+      }
+    }
+  ) 
+  
+  output$AlertLevel.box2 <- renderValueBox({
+    if(input$rgn2 == "None Selected") {
+      valueBox(NULL,subtitle = "Please select a region")
+    } else {
+      
+      current.rt <- last(svn_day_data()$temp2a$rate)
+      a_level <- ifelse(current.rt >= 100, "Current Alert Level: High",
+                        ifelse(current.rt < 100 & current.rt >= 50, "Current Alert Level: Substantial",
+                               ifelse(current.rt < 50 & current.rt >= 10, "Current Alert Level: Intermediate",       
+                                      ifelse(current.rt < 5 ,"Current Alert Level: Low"))))
+      valueBox(a_level,subtitle = paste0(current.rt," ","per 100,000 population"))
+    }
+  })
+  observeEvent(input$Alert_explain2, {
+    if(input$rgn2 == "None Selected") {
+      sendSweetAlert(
+        session = session,
+        title = "What does this alert level mean?",
+        text = HTML("<p>Select a Region</p>", '<br>','<br>',
+                    "<p>To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
+                      <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
+                    
+        ),
+        html = TRUE,
+        type = NULL
+      )
+    } else {
+      current.rt <- last(svn_day_data()$temp2a$rate)
+      a_level_I <- ifelse(current.rt >= 100, "High Alert Level (>100 cases per 100,000 residents over past 7-days)",
+                          ifelse(current.rt < 100 & current.rt >= 50, "Substantial Alert Level (50-99 cases per 100,000 residents)",
+                                 ifelse(current.rt < 50 & current.rt >= 10, "Moderate Alert Level (10-49 cases per 100,000 residents)",
+                                        ifelse(current.rt < 10 ,"Low Alert Level (<10 cases per 100,000 residents)"))))
+      
+      sendSweetAlert(
+        session = session,
+        title = "What does this alert level mean?",
+        text = HTML(a_level_I, '<br>','<br>',
+                    "<p>To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
+                      <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
+                    
+        ),
+        html = TRUE,
+        type = NULL
+      )
+    }
+  }) 
+  
+  observeEvent(input$RateC_explain2, {
+    sendSweetAlert(
+      session = session,
+      title = "7-Day COVID-19 case rate",
+      text = HTML("<p>In August 2021, DHSS switched from a three-level system to a four-level 
+                     system to better align with CDC's levels. The per-capita rate uses the census population 
+                     estimates during 2020 for resident cases.</p>
+                     <p>This estimate can be used to monitor the general trajectory of disease 
+                     spread and enables comparison between areas with different population 
+                     sizes.</p>
+                      <p>To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
+                      <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
+                  
+      ),
+      html = TRUE,
+      type = NULL
+    )
+  })    
+    
 ### Average Daily Rate ####    
     rate_data <- reactive({
       
       if(input$inSelectRes_rate == "Resident"){  
+        
+        #rsrt.dat <- avr_data
+        statewide_R <- statewide_av_rates(dat1_res, res=T)
+        BHR_R <- bhr_av_rates(dat1_res, res=T)
+        
+        avr_data <- rbind(statewide_R,BHR_R)
         
         rsrt.dat <- avr_data
         
@@ -515,7 +683,13 @@ source("global.R")
         rsrt.dat$alert <- ifelse(rsrt.dat$rate < 5, "Low",
                                  ifelse(rsrt.dat$rate > 10,"High","Intermediate"))
         rsrt.dat <- rsrt.dat %>% filter(Region != "Unknown")
+        
       }else{
+        
+        statewide_RN <- statewide_av_rates(dat1_resnon,res=F)
+        BHR_RN <- bhr_av_rates(dat1_resnon,res=F)
+        avrn_data <- rbind(statewide_RN,BHR_RN)
+        
         rsrt.dat <- avrn_data
         
         rsrt.dat$daily_average <- round(rsrt.dat$daily_average,2)
@@ -558,12 +732,18 @@ source("global.R")
     })
   
     observe({
-      Factors <- avr_data %>% filter(Area == input$geo)
-      Factors <- names(table(Factors$Region))
-      Factors <- as.list(Factors)
+      if(input$geo == "Statewide") {
+        updateSelectInput(session, "rgn", "Select Region:",
+                          choices = "Statewide")
+      } else {
+      # Factors <- avr_data %>% filter(Area == input$geo)
+      # Factors <- names(table(Factors$Region))
+      BHR_list <- BHR_list
+      Factors <- as.list(BHR_list)
       
       updateSelectInput(session, "rgn", "Select Region:",
                         choices = Factors)
+    }
     })  
 
     output$rate.plot <- renderPlotly({
@@ -584,11 +764,12 @@ source("global.R")
         xlab("")+
         #ylim(0,max(temp2a$rate)+10)+
         coord_cartesian(ylim = c(0, max(rate_data()$temp2a$upperCI)+5)) +
-        scale_x_date(breaks = pretty(rate_data()$temp2a$dates, n = 10), date_labels = "%d %b",
+        scale_x_date(date_breaks = "1 month", date_labels = "%b %Y",
                      limits = c(min(rate_data()$temp2a$dates), max(rate_data()$temp2a$dates))) +
-        labs(title= paste0("Average daily case rate",' ','(',input$wind,')', ' ',
+        labs(title= paste0("Average daily COVID-19 case rate",' ','(',input$wind,')', ' ',
                            "per 100,000 population,", ' ',input$rgn)) +
-        theme_minimal()
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 30,hjust = 1))
       
       ggplotly(a, tooltip = c("text")) 
       
@@ -614,8 +795,8 @@ source("global.R")
     observeEvent(input$RateC_explain, {
       sendSweetAlert(
         session = session,
-        title = "Average daily case rate",
-        text = HTML("<p> The Alaska DHSS standard for determining alert levels uses in-state resident 
+        title = "Average daily COVID-19 case rate",
+        text = HTML("<p> This depreciated Alaska DHSS standard for determining alert levels used in-state resident 
                      cases averaged over a 14-day window. Other options (7-day window and all cases) 
                      are provided for convenience. The per-capita rate uses the census population 
                      estimates for resident cases, and census population + influx estimate for all 
@@ -623,7 +804,7 @@ source("global.R")
                      <p>This estimate can be used to monitor the general trajectory of disease 
                      spread and enables comparison between areas with different population 
                      sizes.</p>
-                      <p>To learn more about Alaska COVID-19 Alert Levels please visit:
+                      <p>To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
                       <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
                     
         ),
@@ -643,7 +824,7 @@ source("global.R")
         session = session,
         title = "What does this alert level mean?",
         text = HTML(a_level_I, '<br>','<br>',
-                    "<p>To learn more about Alaska COVID-19 Alert Levels please visit:
+                    "<p>To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
                       <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
                     
         ),
