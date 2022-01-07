@@ -13,7 +13,7 @@ The reproductive number of a virus provides an indication of the average number 
 The basic reproductive number is the expected maximum of the disease in a given population that is fully susceptible with no mitigation efforts in place. This scenario, provides the maximum potential of the spread in a given community. The potential of the disease spread is what is traditionally known as R0.  
 
   
-The effective reproductive number takes into account the current susceptibility in the population, which may be modified due to mitigations strategies such as social distancing, vaccinations, and immunity. This time-dependent measure of the reproductive number is based on the current status of the transmission in the population and based on more realistic scenarios. The observed spread of the disease accounting for population efforts and circumstances is traditional known as Rt. The use of Rt is to represent the actual transmission rate at any given time (t).  
+The effective reproductive number takes into account the current susceptibility in the population, which may be modified due to mitigation strategies such as social distancing, vaccinations, and immunity. This time-dependent measure of the reproductive number is based on the current status of the transmission in the population and based on more realistic scenarios. The observed spread of the disease accounting for population efforts and circumstances is traditional known as Rt. The use of Rt is to represent the actual transmission rate at any given time (t).  
 
   
 Traditionally, at the initial stages of an epidemic, the basic reproductive number will inform public health and projection models, but as more information is gathered, and populations take steps to mitigate the spread, the effective reproductive number is used to measure, project, and monitor the spread of the disease.  
@@ -25,10 +25,8 @@ Research suggests, that reproductive numbers less than 1 will result in non-sust
 While an important measure of disease spread, this measure lags behind the actual spread of the disease due to the incubation period (time from infection to development of symptoms). Thus coupled with additional epidemiological data, public health officials can use multiple measures to inform their difficult decisions.  
   
 The Imperial College has estimated the R0 of the novel Coronavirus (COVID-19) to be between 1.5 and 3.5. This projection while important is only a starting point for developing early projection models. Any estimate, however is influenced by detection, testing, and our understanding of the pathogen. Furthermore, the methodologies for calculating the effective reproductive number are not universally agreed upon by experts. While multiple methods do exist for calculating the effective reproductive number, many methods have been developed to account for limitations and availability of line listing data (information obtained from contact tracing), all of which however, should produce similar results.  
-
   
 All methods require some measure of input related to the exponential growth or spread of the disease. These measures are often estimated using the growth rate (how fast the disease is spreading over time in the population), mean serial interval (the average length of time between when an index case expresses symptoms and an infected person expresses symptoms), or generation time (the time interval between one infection to a subsequent infection).  While additional nuances related to these measures are present, the generalities for this discussion are sufficient. Also required are incidence data about the outbreak (daily counts of infected people). Early in a disease outbreak the report date of a confirmed test may be used (and sometimes cumulative estimates, to address instability of early estimates), but  researchers quickly shift to daily incidence counts based on date of onset of symptoms. This, when plotted, is often referred to as the epidemic curve.  
-  
     
 The three basic inputs for estimating the time-dependent effective reproductive number are:  
 
@@ -47,9 +45,9 @@ We used the incidence[[4]](#references) and EpiEstim[[5]](#references) packages 
 
 The primary method used to calculate the effective reproductive number by the State of Alaska, Division of Public Health, implements a Bayesian framework as suggested and implemented in the EpiEstim package in the R statistical environment. This package is implemented and supported by Cori et al., at the Imperial College. Multiple other packages such as “R0” exist and provide methods for estimating the reproductive number using several documented methods (e.g. using the attack rate, maximum likelihood, growth, and a Bayesian approach). These additional packages have been used, particularly the R0 package which provides some additional tools for conducting sensitivity analyses around the estimated inputs.  
 
-Briefly, using the estimate_R function in the EpiEstim package, a vector containing the incidence time series of cases based on onset date, estimates of the mean serial interval, and dates are supplied. Due to the delay between an individual recognizing symptoms, being tested, and those results being reported to the State, we use a simulated onset date distribution. To account for the fact that most of these substitution dates occur during the most recent week, a simple simulation method was developed to assign a temporary onset date by sampling from a truncated gamma distribution with a median of 6 days (range 0-14 days). This imputation helps guard against making estimations that are attenuated due to limitations in data collection opposed to impacts related to the disease transmission. Additionally, due to future cases that are yet to be reported likely having onset dates during the most recent week of collection, correction methods or truncation is also required.  
+Briefly, using the estimate_R function in the EpiEstim package, a vector containing the incidence time series of cases based on onset date, estimates of the mean serial interval, and dates are supplied. Due to the delay between an individual recognizing symptoms, being tested, and those results being reported to the State, we use a simulated onset date distribution. To account for the fact that most of these substitution dates occur during the most recent week, a simple simulation method was developed to assign a temporary onset date by sampling from a truncated gamma distribution with a median of 5 days (range 0-12 days). This imputation helps guard against making estimations that are attenuated due to limitations in data collection opposed to impacts related to the disease transmission. Additionally, due to future cases that are yet to be reported likely having onset dates during the most recent week of collection, correction methods or truncation is also required.  
   
-Currently we right censor 9 days from the last reported date as this is the average incubation period, and then substitute the fitted values from a log-linear model based on 30 day period prior to the censor date. These "provisional" estimates enable us to estimate Rt when cases have yet to be reported.
+We updated to right censor 5 days (opposed to 9 days) from the last reported date as this is the average incubation period, and then substitute the fitted values from a log-linear model based on 30 day period prior to the censor date. These "provisional" estimates enable us to estimate Rt when cases have yet to be reported.
 
 A Bayesian framework is used to estimate the effective reproductive number of some predefined time window with a given discrete distribution of the serial interval. To establish the serial interval distribution, five user specified methods are available. Using a small sample of line listing data that were available, we estimated the mean serial interval and standard deviation. Using this information we compared three methods for addressing the mean serial interval:   
 
@@ -57,13 +55,13 @@ A Bayesian framework is used to estimate the effective reproductive number of so
 2. Uncertain, where we supplied the mean and standard deviation of the serial interval as well as bounds for these measures, where draws from a truncated normal distribution are used      
 3. Empirical method, where we provided the data which derived the mean serial interval and standard deviation, using MCMC for the exposure data provided       
 
-We initially provided both the parametric and empirical methods for estimating the serial interval distribution. Due to the limited differences in estimates the empirical method was dropped due to the extensive computing time required. Finally, these estimates are made using a 14-day sliding window to reduce the impact of day-to-day variability.     
+We initially provided both the parametric and empirical methods for estimating the serial interval distribution. Due to the limited differences in estimates the empirical method was dropped due to the extensive computing time required. Finally, we updated our approach from using a 14- to 10-day sliding window to increase sensitivity but reduce the overall impact of day-to-day variability.     
 
 The code for imputing an onset date from report date:  
 ```{r eval = FALSE}
 
 set.seed(2020)
-dist <- round(rtgamma(100000, shape =  6, truncation = 14))
+dist <- round(rtgamma(100000, shape =  4, truncation = 12))
 
 set.seed(19)
 
@@ -79,8 +77,8 @@ dat1 <- dat
 The code for estimating the time varying reproductive number:  
 ```{r eval = FALSE}
 make_data <- function(x) {
-        t_start_e <- seq(2, length(x[["dates"]])-13)
-        t_end_e   <- t_start_e + 13
+        t_start_e <- seq(2, length(x[["dates"]])-9)
+        t_end_e   <- t_start_e + 9
         si7 <- estimate_R(x,
                           method="parametric_si",
                           config = make_config(list(
@@ -92,7 +90,7 @@ make_data <- function(x) {
         mean_e <- round(si7$R$`Mean(R)`,2)
         low_e <- round(si7$R$`Quantile.0.025(R)`,2)
         high_e <- round(si7$R$`Quantile.0.975(R)`,2)
-        date_e <- (si7$dates[-c(1:14)])
+        date_e <- (si7$dates[-c(1:10)])
         
         dfx_e <- data.frame(mean = mean_e, low = low_e, high = high_e, date = as.Date(date_e, origin = "1970-01-01"))
         return(dfx_e)
@@ -103,7 +101,7 @@ make_data <- function(x) {
 
 At the beginning of the spread of the disease estimating R is subject to a lot of variability which is represented by the wide confidence intervals. Estimates for smaller geographic regions often have extreme variability. Observing the general trends and status of Rt can provide an indication of the spread of COVID-19. Areas with multiple days without cases followed by a few days with cases will generally produce unstable Rt estimates due to the sporadic spread. If steady disease transmission begins to occur the estimates will stabilize.  
   
-Two plots are provided, one for the total incidence (residents and non-residents) and one for residents only. With travel restrictions in place, being able to look at the spread of local cases only provides insights into how the disease is spreading locally and the effectiveness of both mitigation strategies and contact tracing efforts.    
+Two plots are provided, one for the total incidence (residents and non-residents) and one for residents only. Being able to look at the spread of local cases only provides insights into how the disease is spreading locally and the effectiveness of personal efforts, mitigation strategies, new variants, and contact tracing efforts.    
 
 **References**  
 
@@ -122,4 +120,4 @@ Two plots are provided, one for the total incidence (residents and non-residents
 **Note:**  
 The code that created this application is available at:   
 <https://github.com/AK-MCH-EPI/AK_COVID>  
-last updated: 2020-11-25  
+last updated: 2022-01-07  

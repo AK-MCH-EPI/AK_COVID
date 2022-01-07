@@ -20,7 +20,7 @@
 # 
 # THE APPLICATION IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 #
-# Release Date: 2020-08-07
+# Release Date: 2020-08-07; updated 1/6/2022
 
 ############ Begin Code ############################################################
 
@@ -48,11 +48,12 @@ library(shinydashboard)
 library(shinyWidgets)
 library(shinybusy)
 library(janitor)
+library(markdown)
 
 ## read data and organize for processing ####
  sapply(list.files("R", full.names = T), source)
-# 
-# ## connect to Alaksa data hub through the API: Onset Date Table this API is having issues
+#
+# ## connect to Alaska data hub through the API: Onset Date Table this API is having issues
 # # 
 # # url <- "https://opendata.arcgis.com/datasets/c1b6c31d09b44c33962570950456feea_0.geojson"
 # # dat1 <- setdata(url)
@@ -94,8 +95,9 @@ library(janitor)
 #                                      origin = "1970-01-01", 
 #                                      tz = "America/Anchorage"), tz = '')
 
-url_t <- "https://alaska-dhss.maps.arcgis.com/sharing/rest/content/items/5caec8048d35484ab58ad62356783ed8/data"
-dat <- read.csv(url_t)
+#url_t <<- "https://alaska-dhss.maps.arcgis.com/sharing/rest/content/items/5caec8048d35484ab58ad62356783ed8/data"
+url_t <<- "https://www.arcgis.com/sharing/rest/content/items/ba85c5899fd3440cad7c2d3406f2fde4/data"
+dat <<- read.csv(url_t)
 
 
 
@@ -119,7 +121,7 @@ dt <- as.Date(as.Date(min(dat1$report_date)):as.Date(max(dat1$report_date)),orig
 ### Set Max date 
 max_date <-  max(dat1$report_date)
 
-### Set number of months of outbrek
+### Set number of months of outbreak
 mnths_dsp <- interval((min(dt)), (max_date+10)) %/% months(1)
 
 

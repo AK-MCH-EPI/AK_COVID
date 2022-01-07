@@ -17,7 +17,7 @@ setdata_1 <- function(ds2){
  
 #Simple simulation for estimating onset date
   set.seed(2020)
-  dist <- round(rtgamma((nrow(dat1)+20000), shape =  6, truncation = 14))
+  dist <- round(rtgamma((nrow(dat1)+20000), shape =  4, truncation = 12))
   
   set.seed(19)
   

@@ -1,7 +1,7 @@
 #
-# Alaska Rshiny application 2.0
+# Alaska Rshiny application 2.1
 #
-# Dveloped by Jared Parrish, PhD - Alaska Division of Public Health
+# Developed by Jared Parrish, PhD - Alaska Division of Public Health
 # 
 # Copyright (C) 2020, State of Alaska, Division of Public Health
 
@@ -37,16 +37,13 @@ ui <- fluidPage(
                  br(),
                  sliderInput("inSlide", "Number of prior months to display:",
                              min = 1, max = mnths_dsp,
-                             value = 5
+                             value = 9
                  ),
                  checkboxInput("cumcntCheckbox",
                                "Change to cumulative daily case count",
-                               FALSE), 
-                  # helpText(HTML('<p><b>Notice:</b>
-                  #                If you’re having trouble viewing the bar chart when you expand 
-                  #                the number of months this is due to your screen size or screen 
-                  #                resolution. You can view the chart by zooming out on your browser.
-                  #               </p>')),
+                               FALSE),
+                 br(),
+                  helpText(HTML('<p>Last Updated: 2022-01-07</p>')),
                    width=3),
         mainPanel(
             tabsetPanel(
@@ -62,7 +59,7 @@ ui <- fluidPage(
                 tabPanel("Interpretation",
                          helpText("This graph represents the daily COVID-19 case count in Alaska (yellow).",
                                   "Simulated date of symptom onset was used. Gray bars represent data from the most recent",
-                                  "9 days, which are not included in the analysis due to incomplete data/delay in reporting.",
+                                  "5 days, which are not included in the analysis due to incomplete data/delay in reporting.",
                                   "The blue dotted line represents the predicted daily case trajectory (assumed exponential),",
                                   "with the gray band representing the 95% Confidence Interval (estimate range) of the projection.",
                                   "For a complete description of the methods please view the Methods tab.",
@@ -109,7 +106,7 @@ ui <- fluidPage(
                      helpText(HTML('<p> <i>Resident cases occurring outside Alaska excluded.</i> </p>')),
                      sliderInput("inSlide1", "Number of prior months to display:",
                                  min = 1, max = mnths_dsp,
-                                 value = 5
+                                 value = 9
                      ),
                      actionButton("Rt_explain", "Click to learn about Rt"),
                      br(),
@@ -118,14 +115,10 @@ ui <- fluidPage(
                                    <p> Cori, A. et al. A new framework and software to estimate
                                        time-varying reproduction numbers during epidemics (AJE 2013)</p>')),
                      br(),
-                     downloadButton("downloadRtData", "Download Data"),
-                     # br(),
-                     # br(),
-                     # helpText(HTML('<p><b>Note:</b>
-                     #            We are currently experiencing a delay between when the hub site is 
-                     #            updated and the data is made available through the GeoJSON API file. 
-                     #            These models utilize an API file which may result in the estimates 
-                     #            temporarily lagging behind the site update.</p>')),
+                     downloadButton("downloadRtData", "Download Data"), 
+                     br(),
+                     br(),
+                     helpText(HTML('<p>Last Updated: 2022-01-07</p>')),
                      width=3),
                  mainPanel(
                      tabsetPanel(
@@ -182,62 +175,8 @@ ui <- fluidPage(
                                   To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
                                  <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
                      )
-                 )),
-        tabPanel("Average Daily Rate (Old Alert)",
-                 sidebarPanel(
-                     #radioButtons("geo", "Select Area:",
-                     #              c("Statewide","Behavioral Health Region","Borough")), 
-                     radioButtons("geo", "Select Area:",
-                                  c("Statewide","Behavioral Health Region")),
-                     #uiOutput("factor_dropdown"),
-                     selectInput("rgn", "Select Region:",
-                                 choices = "", selected = ""),
-                     helpText(HTML('<p><b>CAUTION:</b>
-                                   Areas with a few number of cases have extreme
-                                   variability resulting in unstable rates over time as represented 
-                                   by the large confidence bands. In small areas a few cases can
-                                   result in large changes.</p>')),
-                     actionButton("RateC_explain", "Learn about this measure"),
-                     br(),
-                     br(),
-                     radioButtons("wind", "Select Window:",
-                                  c("14 day window","7 day window")),
-                     selectInput("inSelectRes_rate", 
-                                 label = "Select case type",
-                                 choices = c("Resident", "Resident & non-Resident"),
-                                 selected = "Resident"),
-                     br(),
-                     downloadButton("downloadRateData", "Download Data"),
-                      br(),
-                      br(),
-                      helpText(HTML('<p><b>Note:</b>
-                        This alert level calculation uses Report date daily totals 
-                        to align closer with national methods and estimates.
-                        </p>')),
-                     width = 3),
-                 
-                 mainPanel(
-                     tags$style(type="text/css",
-                                ".shiny-output-error { visibility: hidden; }",
-                                ".shiny-output-error:before { visibility: hidden; }"
-                     ),
-                     br(),
-                     plotlyOutput("rate.plot"),
-                     br(),
-                     valueBoxOutput("AlertLevel.box", width = 20),
-                     
-                     actionButton("Alert_explain", "What does this mean?"),
-                     br(),
-                     br(),
-                     
-                     HTML("<p> <b>This historical (depreciated) Alaska DHSS standard for determining Alert level used 
-                                 in-state resident cases with the 14 day window.</b>
-                                 To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
-                                 <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
-                     )
                  ))
         
- 
     )
 )
 

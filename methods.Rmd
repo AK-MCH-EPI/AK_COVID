@@ -1,7 +1,7 @@
 ---
 title: "covid-19"
 author: "JW Parrish"
-date: "11/25/2020"
+date: "1/07/2022"
 output: html_document
 ---
 
@@ -22,16 +22,16 @@ log(y) = r*t+b
 
 Where, ‘y’ is the daily incidence, ‘t’ is the time in days from the start of the outbreak, ‘r’ is the growth rate, and ‘b’ is the origin or intercept. 
 
-Assuming that without mitigation efforts the disease will spread at an exponential rate, we modeled the observed daily case counts over a 30-day period (daily counts) or 10-day period (cumulative counts) based on a simulated date of onset distribution, and projected out 19 days. Due to the delay between an individual recognizing symptoms, being tested, those results being reported to the State and entered into the system and the growing number of cases, tracking onset date explicitly has become difficult. To estimate the onset date distribution from daily reports we sampled from the 10% of reported cases with a known onset date to inform our model parameters. 
+Assuming that without mitigation efforts the disease will spread at an exponential rate, we modeled the observed daily case counts over a 21-day period (daily counts) or 10-day period (cumulative counts) based on a simulated date of onset distribution, and projected out 12-15 days (depending on model). Due to the delay between an individual recognizing symptoms, being tested, those results being reported to the State and entered into the system and the growing number of cases, tracking onset date explicitly has become difficult. To estimate the onset date distribution from daily reports we sampled from the 10% of reported cases with a known onset date to inform our model parameters. 
 Distribution creation  
 
-1. We simulated a truncated gamma distribution with a median of 6 days and range of 0 – 14 days. The randomly sampled lag days for each reported case.  The lag days were subtracted from the report date to create an estimated onset date distribution.    
+1. We simulated a truncated gamma distribution with a median of 4 days and range of 0 – 12 days. The randomly sampled lag days for each reported case.  The lag days were subtracted from the report date to create an estimated onset date distribution.    
 
-2. Due to the increased lag in reporting we expanded our truncation window from 7 to 9 days. The model uses the 30 day period (for daily case projection) or 10 day period (for cumulative case projections prior to the truncation window.  
+2. Due to improvements in detection and reporting we shortened the truncation window from 9 to 5 days. The model uses the 21 day period (for daily case projection) or 10 day period (for cumulative case projections prior to the truncation window.  
 
 3. We implemented a new method for estimating preliminary counts based on partial information from the truncation window. Using the projections and distcrete packages in R built by the R Epidemics Consortium (RECON) [[4]](#references), we simulated the incidence using the measured effective reproductive number at truncation,  and mean serial interval distribution from a base Poisson distribution. These estimated values (while excluded from the model) are represented with gray bars (daily plot) or dots (cumulative plot). The estimate with 0.25 and 0.975 credible intervals are provided.  
 
-4. Using the log-linear model based on the 30-day or 10-day pre-truncation window we project out 19 days (10 days past the lag window).  The use of this 30 day or 10 day window for the statewide estimate was chosen by convention with short-term projections, where the assumption is that more recent trends likely better approximate the current trajectory.  
+4. Using the log-linear model based on the 21-day or 10-day pre-truncation window we project out 12 days (7 days past the lag window).  The use of this 21 day or 10 day window for the statewide estimate was chosen by convention with short-term projections, where the assumption is that more recent trends likely better approximate the current trajectory. We shortened the window from 30 to 21 days to increase the sensitivity in reacting to changes in the trend. This change however increases the imprecision of these estimates. 
 
 These methods are validated against other more complex methods bi-weekly that explicitly account for reporting delay distribution, generation time distribution, and incubation period distribution using the EpiNow2 package in R [[5]](#references). These methods are only ran bi-weekly due to the computing resources required to complete them.   
 
@@ -39,7 +39,7 @@ The code for imputing an onset date from report date:
 ```{r eval = FALSE}
 
 set.seed(2020)
-dist <- round(rtgamma(100000, shape =  6, truncation = 14))
+dist <- round(rtgamma(100000, shape =  4, truncation = 12))
 
 set.seed(19)
 
@@ -79,4 +79,4 @@ Incidence of Dated Events. R package version 1.7.1.
 **Note:**  
 The code that created this application is available at:   
 <https://github.com/AK-MCH-EPI/AK_COVID>  
-last updated: 2020-11-25 
+last updated: 2021-01-07 

@@ -40,3 +40,14 @@ Major version update:
 
 Version update:
 6/4/2021: <completed> Update URL to new table and elements
+
+Model update: 
+1/7/2022: <completed> Recenter gamma distribution for imputing onset date from report date from 6 to 4 days and upper bound of 12 days(based on current estimates)
+1/7/2022: <completed> modify the truncation window from 9 to 5 days
+1/7/2022: <completed> Shorten prediction window form 30 to 21 days to increase responsivness to inflections
+1/7/2022: <completed> Shortened projection from 10 to 7 days
+1/7/2022: <completed> Shorten sliding-window for Rt calculation from 14 to 10 days
+1/7/2022: <completed> Changed average Rt estimated from 14 to 10 days to be consistent with sliding window
+1/7/2022: <completed> Removed tab for old alert levels
+1/7/2022: <completed> Updated Methods tabs for Rt and model
+1/7/2022: <completed> Changed default view from 5 months to 9 months

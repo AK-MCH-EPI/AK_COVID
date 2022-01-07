@@ -38,10 +38,10 @@ source("global.R")
         io_1 <- incidence(e_dat1$OnsetDate_imp, last_date = max(e_dat1$report_date))
         io_1d <- as.data.frame(io_1)
         
-        io_2 <- subset(io_1, to = max(io_1$dates-9))
+        io_2 <- subset(io_1, to = max(io_1$dates-5))
         io_2d <- as.data.frame(io_2)
       
-        temp3 <- subset(io_1, from = max(io_1$dates-38), to = max(io_1$dates)-9) # Range for prediction model
+        temp3 <- subset(io_1, from = max(io_1$dates-25), to = max(io_1$dates)-5) # Range for prediction model
 
         i_fit <- incidence::fit(temp3)  
         
@@ -65,8 +65,8 @@ source("global.R")
         
         
           make_data <- function(x) {
-            t_start_e <- seq(2, length(x[["dates"]])-13)
-            t_end_e   <- t_start_e + 13
+            t_start_e <- seq(2, length(x[["dates"]])-9)
+            t_end_e   <- t_start_e + 9
             si7 <- estimate_R(x,
                               method="parametric_si",
                               config = make_config(list(
@@ -78,7 +78,7 @@ source("global.R")
             mean_e <- round(si7$R$`Mean(R)`,2)
             low_e <- round(si7$R$`Quantile.0.025(R)`,2)
             high_e <- round(si7$R$`Quantile.0.975(R)`,2)
-            date_e <- (si7$dates[-c(1:14)])
+            date_e <- (si7$dates[-c(1:10)])
             
             dfx_e <- data.frame(mean = mean_e, low = low_e, high = high_e, date = as.Date(date_e, origin = "1970-01-01"))
             return(dfx_e)
@@ -87,19 +87,19 @@ source("global.R")
           TCe <- data.frame(dates = io_2d$dates,I = io_2d$counts)
           dx1 <- make_data(TCe)
           
-          dts <- c(min(i_fit$model$model$dates.x): 49)
+          dts <- c(min(i_fit$model$model$dates.x): 33)
           tIn <- data.frame(dates.x = as.numeric(dts)) #turn into data frame
           extFit <- predict(i_fit$model, tIn,interval = "confidence", level = 0.95)
           
           y <- exp(extFit)
           
-          drg <- as.Date(c((max(io_1d$dates-38)):(max(io_1d$dates)+10)),origin = "1970-01-01") # set dates for predicted range
+          drg <- as.Date(c((max(io_1d$dates-25)):(max(io_1d$dates)+7)),origin = "1970-01-01") # set dates for predicted range
           
           #create dataframe of predictions
           projs <- data.frame(y, date = as.Date(drg, origin = "1970-01-01"))
         
           #use average Rt over last 
-          avgRt14 <- mean(dx1$mean[c((max(nrow(dx1)-13)):(max(nrow(dx1))))]) 
+          avgRt10 <- mean(dx1$mean[c((max(nrow(dx1)-9)):(max(nrow(dx1))))]) 
           
           ## Projection estimates
           set.seed(1)
@@ -107,15 +107,15 @@ source("global.R")
                           shape = 6,
                           #scale = 4.0,
                           w = 0.5)
-          proj_1 <- project(subset(io_1, to = max(io_1$dates-8)), 
-                            R = avgRt14, si = si, n_days = 19)
+          proj_1 <- project(subset(io_1, to = max(io_1$dates-5)), 
+                            R = avgRt10, si = si, n_days = 5)
           
           proj_2 <- as.data.frame(proj_1)
           proj_2$R.mean <- rowMeans(proj_2[,c(2:101)],na.rm = TRUE)
           proj_3 <- cbind(proj_2,t(apply(proj_2[,-c(1,101)],1,quantile, probs = c(0.025, 0.5, 0.975),
                                          na.rm = TRUE)))
           
-          dta <- data.frame(dates = as.Date(c((max(io_1d$dates)-8):(max(io_1d$dates+10))),origin = "1970-01-01"),
+          dta <- data.frame(dates = as.Date(c((max(io_1d$dates)-4):(max(io_1d$dates))),origin = "1970-01-01"),
                             Mean = c(proj_3$R.mean),
                             lower = c(proj_3$`2.5%`),
                             upper = c(proj_3$`97.5%`))
@@ -126,7 +126,7 @@ source("global.R")
             geom_bar(data = io_2d, aes(x = dates, y = counts,
                                          text = paste("Date:",dates,"<br>Imputed count:",counts))
                      , stat = "identity",fill = "#ffb923") +
-            geom_bar(data = subset(dta, dates <= min(dates)+8),
+            geom_bar(data = dta, 
                      aes(x = dates, y = Mean,
                                      text = paste("Date:",dates,"<br>Adjusted count:",Mean,
                                            "<br>LowerCI:",round(lower,2),"<br>UpperCI:",round(upper,2))), 
@@ -172,15 +172,15 @@ source("global.R")
             #Cumulative incidence objects #
             io_1cum <- cumulate(io_1) # cumulative incidence
             #subset and create incidence object on the 10 days before truncation.
-            io_2cum <- subset(io_1cum, from = max(io_1$dates-19), to = max(io_1$dates-9))
-            # for plotting 9 days truncated.
-            tnk_c <- as.data.frame(subset(io_1cum, from = max(io_1cum$dates-8), to = max(io_1cum$dates)))
+            io_2cum <- subset(io_1cum, from = max(io_1$dates-15), to = max(io_1$dates-5))
+            # for plotting 5 days truncated.
+            tnk_c <- as.data.frame(subset(io_1cum, from = max(io_1cum$dates-4), to = max(io_1cum$dates)))
             #Fit log linear model on the 10 day subset
             i_fit_c <- incidence::fit(io_2cum)
             
                 dtr <- data.frame(date = as.Date(min(io_1cum$dates):(max(io_1cum$dates)+10), origin = "1970-01-01"))
                 
-                dts <- c(min(i_fit_c$model$model$dates.x):29)
+                dts <- c(min(i_fit_c$model$model$dates.x):25)
                 tIn <- data.frame(dates.x = as.numeric(dts)) #turn into data frame
                 
                 #prediction from fitted model
@@ -196,8 +196,8 @@ source("global.R")
                 ## Projection estimates for truncation window!!!
                 
                 make_data <- function(x) {
-                  t_start_e <- seq(2, length(x[["dates"]])-13)
-                  t_end_e   <- t_start_e + 13
+                  t_start_e <- seq(2, length(x[["dates"]])-9)
+                  t_end_e   <- t_start_e + 9
                   si7 <- estimate_R(x,
                                     method="parametric_si",
                                     config = make_config(list(
@@ -209,7 +209,7 @@ source("global.R")
                   mean_e <- round(si7$R$`Mean(R)`,2)
                   low_e <- round(si7$R$`Quantile.0.025(R)`,2)
                   high_e <- round(si7$R$`Quantile.0.975(R)`,2)
-                  date_e <- (si7$dates[-c(1:14)])
+                  date_e <- (si7$dates[-c(1:10)])
                   
                   dfx_e <- data.frame(mean = mean_e, low = low_e, high = high_e, date = as.Date(date_e, origin = "1970-01-01"))
                   return(dfx_e)
@@ -223,13 +223,13 @@ source("global.R")
                                 shape = 6,
                                 #scale = 4.0,
                                 w = 0.5)
-                proj_1 <- project(subset(io_1, to = max(io_1$dates-8)), 
-                                  R = last(dx1$mean), si = si, n_days = 19)
+                proj_1 <- project(subset(io_1, to = max(io_1$dates-5)), 
+                                  R = last(dx1$mean), si = si, n_days = 5)
                 proj_2 <- as.data.frame(proj_1)
                 proj_2$R.mean <- rowMeans(proj_2[,c(2:101)],na.rm = TRUE)
                 proj_3 <- cbind(proj_2,t(apply(proj_2[,-c(1,101)],1,quantile, probs = c(0.025, 0.5, 0.975),
                                                na.rm = TRUE)))
-                dta <- data.frame(dates = as.Date(c((max(io_1$dates)-8):(max(io_1$dates)+10)),origin = "1970-01-01"),
+                dta <- data.frame(dates = as.Date(c((max(io_1$dates)-4):(max(io_1$dates))),origin = "1970-01-01"),
                                   Mean = c(cumsum((proj_3$R.mean))+c(last(io_2cum$counts))),
                                   lower = c(cumsum((proj_3$`2.5%`))+c(last(io_2cum$counts))),
                                   upper = c(cumsum((proj_3$`97.5%`))+c(last(io_2cum$counts))))
@@ -237,7 +237,7 @@ source("global.R")
                 #plot epi curve and prediction window
                 io_1cum_df <- as.data.frame(subset(io_1cum, 
                                                    from = min(io_1$dates), 
-                                                   to = max(io_1$dates-9)))
+                                                   to = max(io_1$dates)-5))
                 
                 t1 <- ggplot() +
                     geom_line(data=io_1cum_df, 
@@ -249,7 +249,7 @@ source("global.R")
                                    text = paste("Date:",dates,"<br>count:",counts)),
                                size = 1.5, color = "#ffb923") +
                     
-                    geom_point(data = subset(dta, dates <= min(dates)+8),
+                    geom_point(data = dta,
                                aes(x = dates, y = Mean, 
                                    text = paste("Date:",dates,"<br>Adjusted count:",Mean,
                                                 "<br>LowerCI:",round(lower,2),"<br>UpperCI:",round(upper,2))),
@@ -306,7 +306,7 @@ source("global.R")
           #Cumulative incidence objects #
           io_1cum <- cumulate(io_1) # cumulative incidence
           #subset and create incidence object on the 10 days before truncation.
-          io_2cum <- subset(io_1cum, from = max(io_1$dates-19), to = max(io_1$dates-9))
+          io_2cum <- subset(io_1cum, from = max(io_1$dates-14), to = max(io_1$dates-4))
             #Fit log linear model on the 10 day subset
             i_fit_c <- incidence::fit(io_2cum)
             
@@ -361,24 +361,24 @@ source("global.R")
       io_1a <- incidence(dat1s$OnsetDate_imp, last_date = max(dat1s$report_date))
       ############
       
-      #subset and create incidence object on the 30 days before truncation.
-      io_2 <- subset(io_1a, from = max(io_1a$dates-38), to = max(io_1a$dates-9))
+      #subset and create incidence object on the 14 days before truncation.
+      io_2 <- subset(io_1a, from = max(io_1a$dates-18), to = max(io_1a$dates-5))
       
-      #Fit log linear model on the 21 day subset
+      #Fit log linear model on the 14 day subset
       i_fit <- incidence::fit(io_2)
       
       ## Use model to predict daily counts for subsetted week.
       
-      dtp <- as.Date(max(io_2$dates+1):max(io_2$dates+9),origin = "1970-01-01")
-      dtpf <- data.frame(dates.x = (max(i_fit$model$model$dates.x)+1):(max(i_fit$model$model$dates.x)+9))   
+      dtp <- as.Date(max(io_2$dates+1):max(io_2$dates+5),origin = "1970-01-01")
+      dtpf <- data.frame(dates.x = (max(i_fit$model$model$dates.x)+1):(max(i_fit$model$model$dates.x)+5))   
       
       extFit <- predict(i_fit$model, dtpf, interval = "confidence", level = 0.95)
       y <- exp(extFit)
       
       projs <- data.frame(y, date = as.Date(dtp, origin = "1970-01-01"))
       
-      ## Create dataset with fitted values substituded for the past 9-days.
-      io_1b <- incidence(dat1s$OnsetDate_imp, last_date = max_date-9)
+      ## Create dataset with fitted values substituted for the past 5-days.
+      io_1b <- incidence(dat1s$OnsetDate_imp, last_date = max_date-5)
       dts <- c(io_1b$dates, projs$date)
       cnts <- c(io_1b$counts, projs$fit)
       cnts_L <- c(io_1b$counts, projs$lwr)
@@ -392,8 +392,8 @@ source("global.R")
       
       
       make_data <- function(x) {
-        t_start_e <- seq(2, length(x[["dates"]])-13)
-        t_end_e   <- t_start_e + 13
+        t_start_e <- seq(2, length(x[["dates"]])-9)
+        t_end_e   <- t_start_e + 9
         si7 <- estimate_R(x,
                           method="parametric_si",
                           config = make_config(list(
@@ -405,7 +405,7 @@ source("global.R")
         mean_e <- round(si7$R$`Mean(R)`,2)
         low_e <- round(si7$R$`Quantile.0.025(R)`,2)
         high_e <- round(si7$R$`Quantile.0.975(R)`,2)
-        date_e <- (si7$dates[-c(1:14)])
+        date_e <- (si7$dates[-c(1:10)])
         
         dfx_e <- data.frame(mean = mean_e, low = low_e, high = high_e, date = as.Date(date_e, origin = "1970-01-01"))
         return(dfx_e)
@@ -472,8 +472,8 @@ source("global.R")
       st1 <- paste0("Current Rt estimate as of",' ', last(dx1$date),":",' ', 
                     round(last(dx1$mean),2), ' ', '(',last(dx3$lower), ' ', '-', ' ', last(dx3$upper),')')
       
-      mn <- mean(dx1$mean[c((max(nrow(dx1)-13)):(max(nrow(dx1))))])
-      st2 <- paste0("Average Rt over past 14 days:", ' ',round(mn,3))
+      mn <- mean(dx1$mean[c((max(nrow(dx1)-9)):(max(nrow(dx1))))])
+      st2 <- paste0("Average Rt over past 10 days:", ' ',round(mn,3))
       HTML(paste(st1, st2, sep = '<br/>'))  
     }) 
     
@@ -665,172 +665,5 @@ source("global.R")
       type = NULL
     )
   })    
-    
-### Average Daily Rate ####    
-    rate_data <- reactive({
-      
-      if(input$inSelectRes_rate == "Resident"){  
-        
-        #rsrt.dat <- avr_data
-        statewide_R <- statewide_av_rates(dat1_res, res=T)
-        BHR_R <- bhr_av_rates(dat1_res, res=T)
-        
-        avr_data <- rbind(statewide_R,BHR_R)
-        
-        rsrt.dat <- avr_data
-        
-        rsrt.dat$daily_average <- round(rsrt.dat$daily_average,2)
-        rsrt.dat$alert <- ifelse(rsrt.dat$rate < 5, "Low",
-                                 ifelse(rsrt.dat$rate > 10,"High","Intermediate"))
-        rsrt.dat <- rsrt.dat %>% filter(Region != "Unknown")
-        
-      }else{
-        
-        statewide_RN <- statewide_av_rates(dat1_resnon,res=F)
-        BHR_RN <- bhr_av_rates(dat1_resnon,res=F)
-        avrn_data <- rbind(statewide_RN,BHR_RN)
-        
-        rsrt.dat <- avrn_data
-        
-        rsrt.dat$daily_average <- round(rsrt.dat$daily_average,2)
-        rsrt.dat$alert <- ifelse(rsrt.dat$rate < 5, "Low",
-                                 ifelse(rsrt.dat$rate > 10,"High","Intermediate"))
-        rsrt.dat <- rsrt.dat %>% filter(Region != "Unknown")
-      }
-      
-      
-      if (input$geo == "Statewide"){
-        
-        temp1a <- rsrt.dat %>% filter(Area == c(input$geo))   
-        
-      }
-      if (input$geo == "Behavioral Health Region"){
-        temp1 <- rsrt.dat %>% filter(Area == c(input$geo))
-        temp1a <- temp1 %>% filter(window %in% c(input$wind))
-        
-      }
-       # if (input$geo == "Borough") {
-       #   temp1 <- rsrt.dat %>% filter(Area == c(input$geo))
-       #   temp1a <- temp1 %>% filter(window %in% c(input$wind))  
-       # }
-      
-      
-      temp2a <- temp1a %>% filter(window == input$wind, Region == input$rgn)
-      
-      w7 <- with(temp2a, ifelse(input$wind == "14 day window", 13,6))
-      
-      temp2a <- temp2a[-c(1:w7),]
-      
-      alert_df <- data.frame(xmin = min(temp2a$dates),
-                             xmax = max(temp2a$dates),
-                             ymin = c(0,5,10),
-                             ymax = c(5,10,max(temp2a$upperCI)+5),
-                             Alert_Level = c("Low","Intermediate","High"))
-      
-      list(alert_df = alert_df, temp2a = temp2a, rsrt.dat = rsrt.dat)
-      
-    })
-  
-    observe({
-      if(input$geo == "Statewide") {
-        updateSelectInput(session, "rgn", "Select Region:",
-                          choices = "Statewide")
-      } else {
-      # Factors <- avr_data %>% filter(Area == input$geo)
-      # Factors <- names(table(Factors$Region))
-      BHR_list <- BHR_list
-      Factors <- as.list(BHR_list)
-      
-      updateSelectInput(session, "rgn", "Select Region:",
-                        choices = Factors)
-    }
-    })  
-
-    output$rate.plot <- renderPlotly({
-      
-      a <- ggplot() +
-        geom_rect(data = rate_data()$alert_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                                                   fill = Alert_Level,
-                                                   text = paste("Alert Level:",Alert_Level)))+
-        scale_fill_manual(values = c("#df212a","#f37b21","#faea5a")) +
-        geom_ribbon(data = rate_data()$temp2a, aes(x = dates, ymin = lowerCI, ymax = upperCI),
-                    alpha = 0.20, fill = "black") +
-        geom_line(data = rate_data()$temp2a, aes(x = dates, y = rate, group = 1,
-                                                 text = paste("Date:",dates,"<br>Rate:",rate,
-                                                              "<br>LowerCI:",lowerCI,
-                                                              "<br>UpperCI:",upperCI)), 
-                  colour = "black") +
-        ylab("rate per 100k residents")+
-        xlab("")+
-        #ylim(0,max(temp2a$rate)+10)+
-        coord_cartesian(ylim = c(0, max(rate_data()$temp2a$upperCI)+5)) +
-        scale_x_date(date_breaks = "1 month", date_labels = "%b %Y",
-                     limits = c(min(rate_data()$temp2a$dates), max(rate_data()$temp2a$dates))) +
-        labs(title= paste0("Average daily COVID-19 case rate",' ','(',input$wind,')', ' ',
-                           "per 100,000 population,", ' ',input$rgn)) +
-        theme_minimal() +
-        theme(axis.text.x = element_text(angle = 30,hjust = 1))
-      
-      ggplotly(a, tooltip = c("text")) 
-      
-    })
-    
-    output$AlertLevel.box <- renderValueBox({
-      current.rt <- last(rate_data()$temp2a$rate)
-      a_level <- ifelse(current.rt >= 10, "Current Alert Level: High",
-                        ifelse(current.rt < 10 & current.rt >= 5, "Current Alert Level: Intermediate",
-                               ifelse(current.rt < 5 ,"Current Alert Level: Low")))
-      valueBox(a_level,subtitle = paste0(current.rt," ","per 100,000 population"))
-    })
-    
-    output$downloadRateData <- downloadHandler(
-      
-      filename = function() {
-        paste(input$rgn, ".csv", sep = "")
-      },
-      content = function(file) {
-        write.csv(rate_data()$temp2a, file, row.names = FALSE)
-      }
-    ) 
-    observeEvent(input$RateC_explain, {
-      sendSweetAlert(
-        session = session,
-        title = "Average daily COVID-19 case rate",
-        text = HTML("<p> This depreciated Alaska DHSS standard for determining alert levels used in-state resident 
-                     cases averaged over a 14-day window. Other options (7-day window and all cases) 
-                     are provided for convenience. The per-capita rate uses the census population 
-                     estimates for resident cases, and census population + influx estimate for all 
-                     cases as respective denominators. All estimates exclude resident out-of-state cases.</p>
-                     <p>This estimate can be used to monitor the general trajectory of disease 
-                     spread and enables comparison between areas with different population 
-                     sizes.</p>
-                      <p>To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
-                      <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
-                    
-        ),
-        html = TRUE,
-        type = NULL
-      )
-    })     
-    observeEvent(input$Alert_explain, {
-      current.rt <- last(rate_data()$temp2a$rate)
-      a_level_I <- ifelse(current.rt >= 10, "High Alert Level (>10 cases per 100,000 residents): Widespread community transmission with many
-                          undetected cases and frequent discrete outbreaks is likely occurring ",
-                          ifelse(current.rt < 10 & current.rt >= 5, "Intermediate Alert Level (5-10 cases per 100,000 residents): Moderate community
-                          transmission with some undetected cases and infrequent discrete outbreaks  is likely occurring ",
-                                 ifelse(current.rt < 5 ,"Low Alert Level (<5 cases per 100,000 residents): Minimal community transmission  is likely occurring ")))
-      
-      sendSweetAlert(
-        session = session,
-        title = "What does this alert level mean?",
-        text = HTML(a_level_I, '<br>','<br>',
-                    "<p>To learn more about the NEW Alaska COVID-19 Alert Levels please visit:
-                      <a href='http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx'>http://dhss.alaska.gov/dph/Epi/id/Pages/COVID-19/alertlevels.aspx</a>.</p>"
-                    
-        ),
-        html = TRUE,
-        type = NULL
-      )
-    })       
     
 }
