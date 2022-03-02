@@ -111,7 +111,6 @@ library(markdown)
 dat <<- read.csv("Cases_Data_B._Cases_Dataset_(CSV).csv")
 
 
-
 # Step 3: Simulate onset date from Report date distribution
 dat1 <<- setdata_1(dat)
 
