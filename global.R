@@ -20,7 +20,7 @@
 # 
 # THE APPLICATION IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 #
-# Release Date: 2020-08-07; updated 1/6/2022
+# Release Date: 2020-08-07; updated 1/6/2022; Archived 2/2/2022
 
 ############ Begin Code ############################################################
 
@@ -51,7 +51,10 @@ library(janitor)
 library(markdown)
 
 ## read data and organize for processing ####
- sapply(list.files("R", full.names = T), source)
+
+## Old import code - kept for legacy ##
+
+#sapply(list.files("R", full.names = T), source)
 #
 # ## connect to Alaska data hub through the API: Onset Date Table this API is having issues
 # # 
@@ -96,8 +99,16 @@ library(markdown)
 #                                      tz = "America/Anchorage"), tz = '')
 
 #url_t <<- "https://alaska-dhss.maps.arcgis.com/sharing/rest/content/items/5caec8048d35484ab58ad62356783ed8/data"
-url_t <<- "https://www.arcgis.com/sharing/rest/content/items/ba85c5899fd3440cad7c2d3406f2fde4/data"
-dat <<- read.csv(url_t)
+
+
+### ---- Start new import code ----####
+
+# url_t <<- "https://www.arcgis.com/sharing/rest/content/items/ba85c5899fd3440cad7c2d3406f2fde4/data"
+# dat <<- read.csv(url_t)
+
+### --- For archived version to run locally - State data last pulled 3/2/2022 at 7:30AM
+
+dat <<- read.csv("Cases_Data_B._Cases_Dataset_(CSV).csv")
 
 
 
